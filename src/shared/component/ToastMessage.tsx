@@ -8,11 +8,11 @@ import useToastStore from "../store/ToastStore";
 function ToastMessage() {
   const { Toast, setToast } = useToastStore();
   useEffect(() => {
-    if(Toast.show){
+    if (Toast.show) {
       setToast(false);
       toast(Toast.content, {
         type: Toast.type || "default",
-        position: "bottom-right",
+        position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
         closeOnClick: true,
