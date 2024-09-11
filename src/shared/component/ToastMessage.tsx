@@ -3,13 +3,13 @@ import React, { useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import useToastStore from "../store/ToastStore";
+import useToastStore from "../../store/ToastStore";
 
 function ToastMessage() {
   const { Toast, setToast } = useToastStore();
   useEffect(() => {
     if (Toast.show) {
-      setToast(false);
+      setToast({ show: false, content: "", type: "success" });
       toast(Toast.content, {
         type: Toast.type || "default",
         position: "top-right",

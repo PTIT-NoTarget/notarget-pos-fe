@@ -1,0 +1,11 @@
+.ant-card-head{
+  height: 50px;
+  position: sticky;
+  top: 0;
+}
+
+.ant-card-body{
+  height: auto;
+  max-height: calc(100% - 50px);
+  overflow-y: auto;
+}
