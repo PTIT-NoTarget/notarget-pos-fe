@@ -2,38 +2,24 @@
 import { viewService } from '@/services/ViewService'
 
 const headers = ref<any[]>([])
-const selectMap = new Map<string, any[]>()
 const items = ref<any[]>([])
+const info = ref<any>({})
 const selected = ref<any[]>([])
-const loading = ref<boolean>(false)
 const rowActions = ref<any[]>([
   {
     icon: 'delete',
-    label: 'Delete',
+    label: '',
     action: (item: any) => remove(item),
   },
 ])
-const viewName = "product_list_sell";
+const viewName = 'product_list_sell'
 
 onMounted(() => {
   viewService.getViewByViewName(viewName)
     .then((res: any) => {
       headers.value = res.data.data
-    });
-})
-
-const addNewRow = (item: any) => {
-  // if same id already exists, increase quantity
-  const existingItem : any = items.value.find((i: any) => i.id === item.id)
-  if (existingItem) {
-    existingItem.quantity += 1
-  } else {
-    items.value.push({
-      ...item,
-      quantity: 1
     })
-  }
-}
+})
 
 const remove = (item: any) => {
   const index = items.value.findIndex((i: any) => i.id === item.id)
@@ -42,14 +28,30 @@ const remove = (item: any) => {
   }
 }
 
+const addNewRow = (item: any) => {
+  const existingItem: any = items.value.find((i: any) => i.id === item.id)
+  if (existingItem) {
+    existingItem.quantity += 1
+    existingItem.price = existingItem.price * existingItem.quantity - existingItem.discount
+  } else {
+    items.value.push({
+      ...item,
+      quantity: 1,
+      discount: 0,
+      price: item.final_price
+    })
+  }
+}
+
 watch(
-  selected,
-  (newVal: any) => {
-    console.log('Selected: ', newVal)
+  items,
+  (newVal: any[]) => {
+    newVal.forEach((item: any) => {
+      item.price = item.final_price * item.quantity - item.discount
+    })
   },
   {
     deep: true,
-    immediate: true
   }
 )
 
@@ -88,29 +90,29 @@ watch(
         <v-tab>Twenty</v-tab>
       </v-tabs>
     </v-col>
-    <v-col cols="1">
+    <v-col cols="1" class="flex justify-center align-center">
       <v-btn icon>
         <v-icon>mdi-dots-vertical</v-icon>
       </v-btn>
     </v-col>
   </v-row>
-  <v-divider></v-divider>
+  <v-divider thickness="4"></v-divider>
   <v-row>
     <v-col cols="8">
       <Table
-        :loading="loading"
         :columns="headers"
         :items="items"
-        :select-map="selectMap"
         :row-actions="rowActions"
         :show-selected="true"
         :selected="selected"
         :highlight-row="false"
         :have-pagination="false"
-      ></Table>
+      />
     </v-col>
     <v-col cols="4">
-
+      <SellInfo
+        :info="info"
+      />
     </v-col>
   </v-row>
 

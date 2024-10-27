@@ -22,6 +22,10 @@ export const productService = {
     return api.get(`product/${id}`)
   },
 
+  getProductByCode (code: string) {
+    return api.get(`product/code/${code}`)
+  },
+
   saveProduct (data: any) {
     return api.post(
       `product/save`,

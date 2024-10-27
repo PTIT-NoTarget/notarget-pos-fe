@@ -40,8 +40,8 @@ const formatDoubleNumber = (value: string | number) => {
 }
 
 const parseDoubleNumber = (value: string) => {
-  if (!value) return 0
-  return parseFloat(value.replace(/,/g, ''))
+  if (value == null || value == '') return 0
+  return parseFloat((value + "").replace(/,/g, ''))
 }
 
 const formatIntegerNumber = (value: string | number) => {
@@ -53,9 +53,9 @@ const formatIntegerNumber = (value: string | number) => {
   })
 }
 
-const parseIntegerNumber = (value: string) => {
+const parseIntegerNumber = (value: any) => {
   if (value == null || value == '') return 0
-  return parseInt(value.replace(/,/g, ''))
+  return parseInt((value + "").replace(/,/g, ''))
 }
 
 const handleNumberChange = (item: any, key: string, change: number) => {
@@ -121,7 +121,6 @@ const activeColor = '#d1dfe3'
 </script>
 
 <template>
-
   <v-data-table-server
     :headers="columns"
     :items="items"
@@ -146,7 +145,7 @@ const activeColor = '#d1dfe3'
         </td>
         <template v-for="column in columns" :key="column['key_name']">
           <td :style="widthStyle(column['width'])">
-            <span class="text-h6 mx-2">{{ column['key_title'] }}</span>
+            <span class="text-h6">{{ column['key_title'] }}</span>
           </td>
         </template>
       </tr>
@@ -262,12 +261,9 @@ const activeColor = '#d1dfe3'
 
                 </template>
                 <template v-else>
-                  <v-img
-                    v-bind="props"
+                  <v-avatar
                     :src="item[column['key_name']]"
-                    max-height="50"
-                    max-width="50"
-                  ></v-img>
+                  ></v-avatar>
                 </template>
               </template>
               <template v-else>
@@ -300,7 +296,7 @@ const activeColor = '#d1dfe3'
 
           </template>
           <template v-else>
-            <td :style="{ width: column['width'] }">
+            <td :style="{ ...widthStyle(column['width']), display: 'flex', justifyContent:'center' }">
               <template v-for="action in rowActions" :key="action.label">
                 <v-btn density="comfortable" @click="action.action(item)">
                   <v-icon :icon="'mdi-' + action.icon"></v-icon>
@@ -330,4 +326,7 @@ const activeColor = '#d1dfe3'
 .v-input__append
   margin-inline-start: 0 !important
 
+
+.v-btn--size-default
+  min-width: 0 !important
 </style>

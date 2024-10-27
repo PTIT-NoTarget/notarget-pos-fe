@@ -7,35 +7,20 @@ const emit = defineEmits()
 const selectedItem = ref<any>(null)
 const searchResults = ref<any[]>([])
 const searchQuery = ref<string>('')
+const typingCount = ref<number>(0)
 const loading = ref<boolean>(false)
 const viewName = 'product_list'
 
-const handleSearchInput = async (val: any) => {
-  searchQuery.value = val
-  if (!val) return
-  if (isPastedCode(val)) {
-    await fetchByCode(val)
-  } else {
-    debouncedSearch(val)
-  }
-}
-
 const handleSelect = (val: any) => {
   if (val) {
-    setTimeout(() => {
-      emit('add', val)
-      selectedItem.value = null
-      searchQuery.value = ''
-      searchResults.value = []
-    }, 100)
+    emit('add', val)
+    selectedItem.value = null
+    searchQuery.value = ''
+    searchResults.value = []
   }
 }
 
-const isPastedCode = (input: string) => {
-  return false
-}
-
-const debouncedSearch = debounce(async (query: string) => {
+const debouncedSearch = debounce((query: string) => {
   if (!query || query === '') {
     searchResults.value = []
     return
@@ -54,28 +39,34 @@ const debouncedSearch = debounce(async (query: string) => {
     })
 }, 400)
 
-const fetchByCode = async (code: string) => {
-
-}
-
-const handleMenu = (val: boolean) => {
-  if(searchQuery.value === '') {
+watch(() => searchQuery.value, (newVal: string, oldValue: string) => {
+  console.log('newVal: ', newVal)
+  if (newVal.length > oldValue.length) {
+    typingCount.value++
+  }
+  if (newVal.length < oldValue.length) {
+    typingCount.value = typingCount.value > 0 ? typingCount.value - 1 : 0
+  }
+  typingCount.value = newVal.length === 0 ? 0 : typingCount.value
+  if (newVal !== '') {
+    if (typingCount.value < newVal.length) {
+      productService.getProductByCode(newVal)
+        .then((res: any) => {
+          emit('add', res.data.data)
+        })
+        .finally(() => {
+          selectedItem.value = null
+          searchQuery.value = ''
+          searchResults.value = []
+          typingCount.value = 0
+        })
+    } else {
+      debouncedSearch(newVal)
+    }
+  } else {
     searchResults.value = []
   }
-}
-
-// watch(() => searchQuery.value, (val) => {
-//   if (selectedItem.value && val !== '') {
-//     setTimeout(() => {
-//       selectedItem.value = null
-//       searchQuery.value = ''
-//       searchResults.value = []
-//     }, 100)
-//   }
-//   else if(val === '') {
-//     searchResults.value = []
-//   }
-// })
+})
 
 </script>
 
@@ -86,19 +77,44 @@ const handleMenu = (val: boolean) => {
     :loading="loading"
     :search="searchQuery"
     item-value="id"
-    item-title="product_name"
+    item-title="product_code"
     clearable
     return-object
     autofocus
     hide-no-data
     no-filter
+    hide-details="auto"
+    append-inner-icon="mdi-magnify"
+    prepend-icon=""
     variant="solo-filled"
-    @update:search="handleSearchInput"
-    @update:model-value="handleSelect"
-    @update:menu="handleMenu"
-  ></v-autocomplete>
+    density="comfortable"
+    @update:search="searchQuery = $event"
+    @blur="searchQuery = ''"
+    @select="handleSelect"
+
+  >
+    <template v-slot:item="{ props, item }">
+      <v-list-item v-bind="props">
+        <template v-slot:prepend>
+          <v-img
+            :src="item.raw.product_image"
+            width="100"
+            height="100"
+            cover
+            class="mr-3"
+          ></v-img>
+        </template>
+        <v-list-item-title class="text-h5">{{ item.raw.product_name }}</v-list-item-title>
+      </v-list-item>
+    </template>
+  </v-autocomplete>
 </template>
 
-<style scoped lang="sass">
+<style lang="sass">
+.v-autocomplete__menu-icon
+  display: none
+
+.v-autocomplete__content
+  max-height: 800px !important
 
 </style>
