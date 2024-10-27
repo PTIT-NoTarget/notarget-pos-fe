@@ -4,9 +4,10 @@ import { computed } from 'vue'
 const props = withDefaults(defineProps<{
   title: any
   modelValue: any
-  editable?: boolean
+  list: any
+  label?: string
 }>(), {
-  editable: false
+  label: 'label'
 })
 const emit = defineEmits(['update:modelValue'])
 const value = computed({
@@ -15,7 +16,6 @@ const value = computed({
     emit('update:modelValue', newValue)
   }
 })
-
 </script>
 
 <template>
@@ -26,11 +26,17 @@ const value = computed({
       </span>
     </v-col>
     <v-col cols="8">
-      <FloatNumberInput
-        :editable="editable"
-        :tooltip="false"
+      <v-autocomplete
+        density="compact"
+        hide-details="auto"
         v-model="value"
-      />
+        :items="list"
+        item-value="id"
+        :item-title="label"
+        clearable
+        return-object
+        hide-no-data
+      ></v-autocomplete>
     </v-col>
   </v-row>
 </template>

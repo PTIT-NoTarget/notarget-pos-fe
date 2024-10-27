@@ -46,9 +46,26 @@ const addNewRow = (item: any) => {
 watch(
   items,
   (newVal: any[]) => {
+    let total : number = 0
+    let discount : number = 0
     newVal.forEach((item: any) => {
+      item.quantity = item.quantity < 0 ? 0 : item.quantity
       item.price = item.final_price * item.quantity - item.discount
+      total += item.price
+      discount += item.discount
     })
+    info.value.total = total
+    info.value.discount = discount
+  },
+  {
+    deep: true,
+  }
+)
+
+watch(
+  info,
+  (newVal: any) => {
+    newVal.final = newVal.total - newVal.discount
   },
   {
     deep: true,
@@ -97,8 +114,8 @@ watch(
     </v-col>
   </v-row>
   <v-divider thickness="4"></v-divider>
-  <v-row>
-    <v-col cols="8">
+  <v-row style="height: calc(100% - 72px)">
+    <v-col cols="8" style="height: 100%">
       <Table
         :columns="headers"
         :items="items"
@@ -109,7 +126,7 @@ watch(
         :have-pagination="false"
       />
     </v-col>
-    <v-col cols="4">
+    <v-col cols="4" style="height: 100%">
       <SellInfo
         :info="info"
       />

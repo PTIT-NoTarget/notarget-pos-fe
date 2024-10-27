@@ -1,30 +1,38 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
+import { computed } from 'vue'
+
+const props = withDefaults(defineProps<{
   editable?: boolean
-  item: any
-  keyName: string
+  modelValue: any
   tooltip?: boolean
 }>(), {
   editable: false,
   tooltip: true
 })
+const emit = defineEmits(['update:modelValue'])
+const value = computed({
+  get: () => props.modelValue,
+  set: (newValue) => {
+    emit('update:modelValue', newValue)
+  }
+})
+
 const formatIntegerNumber = (value: string | number) => {
-  if (!value) return ''
+  if (!value) return '0'
   const num = typeof value === 'string' ? parseInt(value.replace(/,/g, '')) : value
-  return isNaN(num) ? '' : num.toLocaleString('en-US', {
+  return isNaN(num) ? '0' : num.toLocaleString('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   })
 }
 
 const parseIntegerNumber = (value: any) => {
-  if (value == null || value == '') return 0
+  if (value === null || value === '') return 0
   return parseInt((value + '').replace(/,/g, ''))
 }
 
-const handleNumberChange = (item: any, key: string, change: number) => {
-  const currentValue = parseInt(item[key])
-  item[key] = currentValue + change
+const handleNumberChange = (currentValue: any, change: number) => {
+  value.value = parseIntegerNumber(currentValue) + change
 }
 </script>
 
@@ -36,33 +44,33 @@ const handleNumberChange = (item: any, key: string, change: number) => {
           <v-text-field
             v-bind="props"
             density="compact"
-            :model-value="formatIntegerNumber(item[keyName])"
-            @update:model-value="(val : any) => item[keyName] = parseIntegerNumber(val)"
-            @blur="() => item[keyName] = parseIntegerNumber(item[keyName])"
+            :model-value="formatIntegerNumber(value)"
+            @update:model-value="(val : any) => value = parseIntegerNumber(val)"
+            @blur="() => value = parseIntegerNumber(value)"
             hide-details="auto"
             :model-modifiers="{ lazy: true }"
             :append-inner-icon="'mdi-minus'"
-            @click:append-inner="() => handleNumberChange(item, keyName, -1)"
+            @click:append-inner="() => handleNumberChange(value, -1)"
             :prepend-inner-icon="'mdi-plus'"
-            @click:prepend-inner="() => handleNumberChange(item, keyName, 1)"
+            @click:prepend-inner="() => handleNumberChange(value, 1)"
             class="text-right"
           ></v-text-field>
         </template>
-        <span>{{ formatIntegerNumber(item[keyName]) }}</span>
+        <span>{{ formatIntegerNumber(value) }}</span>
       </v-tooltip>
     </template>
     <template v-else>
       <v-text-field
         density="compact"
-        :model-value="formatIntegerNumber(item[keyName])"
-        @update:model-value="(val : any) => item[keyName] = parseIntegerNumber(val)"
-        @blur="() => item[keyName] = parseIntegerNumber(item[keyName])"
+        :model-value="formatIntegerNumber(value)"
+        @update:model-value="(val : any) => value = parseIntegerNumber(val)"
+        @blur="() => value = parseIntegerNumber(value)"
         hide-details="auto"
         :model-modifiers="{ lazy: true }"
         :append-inner-icon="'mdi-minus'"
-        @click:append-inner="() => handleNumberChange(item, keyName, -1)"
+        @click:append-inner="() => handleNumberChange(value, -1)"
         :prepend-inner-icon="'mdi-plus'"
-        @click:prepend-inner="() => handleNumberChange(item, keyName, 1)"
+        @click:prepend-inner="() => handleNumberChange(value, 1)"
         class="text-right"
       ></v-text-field>
     </template>
@@ -72,20 +80,19 @@ const handleNumberChange = (item: any, key: string, change: number) => {
       <v-tooltip location="top">
         <template v-slot:activator="{ props }">
         <span v-bind="props" class="d-block text-right">
-          {{ formatIntegerNumber(item[keyName]) }}
+          {{ formatIntegerNumber(value) }}
         </span>
         </template>
-        <span>{{ formatIntegerNumber(item[keyName]) }}</span>
+        <span>{{ formatIntegerNumber(value) }}</span>
       </v-tooltip>
     </template>
     <template v-else>
       <span class="d-block text-right">
-        {{ formatIntegerNumber(item[keyName]) }}
+        {{ formatIntegerNumber(value) }}
       </span>
     </template>
   </template>
 </template>
 
 <style scoped lang="sass">
-
 </style>

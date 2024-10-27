@@ -30,39 +30,6 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits()
 
-const formatDoubleNumber = (value: string | number) => {
-  if (!value) return ''
-  const num = typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : value
-  return isNaN(num) ? '' : num.toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
-  })
-}
-
-const parseDoubleNumber = (value: string) => {
-  if (value == null || value == '') return 0
-  return parseFloat((value + "").replace(/,/g, ''))
-}
-
-const formatIntegerNumber = (value: string | number) => {
-  if (!value) return ''
-  const num = typeof value === 'string' ? parseInt(value.replace(/,/g, '')) : value
-  return isNaN(num) ? '' : num.toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  })
-}
-
-const parseIntegerNumber = (value: any) => {
-  if (value == null || value == '') return 0
-  return parseInt((value + "").replace(/,/g, ''))
-}
-
-const handleNumberChange = (item: any, key: string, change: number) => {
-  const currentValue = parseInt(item[key])
-  item[key] = currentValue + change
-}
-
 const tableHeight = computed(() => {
   const itemCount = Math.min(props.items.length, props.filter['pageSize']) + 1
   const calculatedHeight = itemCount * rowHeight
@@ -195,66 +162,18 @@ const activeColor = '#d1dfe3'
                 </template>
               </template>
               <template v-else-if=" column['data_type'] === DataType.INTEGER || column['data_type'] === DataType.LONG">
-                <template v-if="column['is_edit']">
-                  <v-tooltip location="top">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field
-                        v-bind="props"
-                        density="compact"
-                        :model-value="formatIntegerNumber(item[column['key_name']])"
-                        @update:model-value="(val : any) => item[column['key_name']] = parseIntegerNumber(val)"
-                        @blur="() => item[column['key_name']] = parseIntegerNumber(item[column['key_name']])"
-                        hide-details="auto"
-                        :model-modifiers="{ lazy: true }"
-                        :append-inner-icon="'mdi-minus'"
-                        @click:append-inner="() => handleNumberChange(item, column['key_name'], -1)"
-                        :prepend-inner-icon="'mdi-plus'"
-                        @click:prepend-inner="() => handleNumberChange(item, column['key_name'], 1)"
-                        class="text-right"
-                      ></v-text-field>
-                    </template>
-                    <span>{{ formatIntegerNumber(item[column['key_name']]) }}</span>
-                  </v-tooltip>
-                </template>
-                <template v-else>
-                  <v-tooltip location="top">
-                    <template v-slot:activator="{ props }">
-                      <span v-bind="props" class="d-block text-right">
-                        {{ formatIntegerNumber(item[column['key_name']]) }}
-                      </span>
-                    </template>
-                    <span>{{ formatIntegerNumber(item[column['key_name']]) }}</span>
-                  </v-tooltip>
-                </template>
+                <IntegerNumberInput
+                  :editable="column['is_edit']"
+                  :tooltip="true"
+                  v-model="item[column['key_name']]"
+                />
               </template>
               <template v-else-if="column['data_type'] === DataType.DOUBLE">
-                <template v-if="column['is_edit']">
-                  <v-tooltip location="top">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field
-                        v-bind="props"
-                        density="compact"
-                        :model-value="formatDoubleNumber(item[column['key_name']])"
-                        @update:model-value="(val : any) => item[column['key_name']] = parseDoubleNumber(val)"
-                        hide-details="auto"
-                        :model-modifiers="{ lazy: true }"
-                        @blur="item[column['key_name']] = parseDoubleNumber($event.target.value)"
-                        class="text-right"
-                      ></v-text-field>
-                    </template>
-                    <span>{{ formatDoubleNumber(item[column['key_name']]) }}</span>
-                  </v-tooltip>
-                </template>
-                <template v-else>
-                  <v-tooltip location="top">
-                    <template v-slot:activator="{ props }">
-                      <span v-bind="props" class="d-block text-right">
-                        {{ formatDoubleNumber(item[column['key_name']]) }}
-                      </span>
-                    </template>
-                    <span>{{ formatDoubleNumber(item[column['key_name']]) }}</span>
-                  </v-tooltip>
-                </template>
+                <FloatNumberInput
+                  :editable="column['is_edit']"
+                  :tooltip="true"
+                  v-model="item[column['key_name']]"
+                />
               </template>
               <template v-else-if="column['data_type'] === DataType.IMAGE">
                 <template v-if="column['is_edit']">
@@ -296,7 +215,9 @@ const activeColor = '#d1dfe3'
 
           </template>
           <template v-else>
-            <td :style="{ ...widthStyle(column['width']), display: 'flex', justifyContent:'center' }">
+            <td
+              :style="{ ...widthStyle(column['width']), display: 'flex', justifyContent:'center',  alignItems:'center'}"
+            >
               <template v-for="action in rowActions" :key="action.label">
                 <v-btn density="comfortable" @click="action.action(item)">
                   <v-icon :icon="'mdi-' + action.icon"></v-icon>
