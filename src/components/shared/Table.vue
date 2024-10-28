@@ -31,7 +31,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits()
 
 const tableHeight = computed(() => {
-  const itemCount = Math.min(props.items.length, props.filter['pageSize']) + 1
+  const itemCount = Math.min((props.items ? props.items.length : 0), props.filter['pageSize']) + 1
   const calculatedHeight = itemCount * rowHeight
   return Math.min(calculatedHeight, props.height) + 'px'
 })
@@ -91,7 +91,7 @@ const activeColor = '#d1dfe3'
   <v-data-table-server
     :headers="columns"
     :items="items"
-    :items-length="totalData ?? items.length"
+    :items-length="totalData ?? (items ? items.length : 0)"
     fixed-header
     :height="tableHeight"
     v-model:page="filter['pageNumber']"

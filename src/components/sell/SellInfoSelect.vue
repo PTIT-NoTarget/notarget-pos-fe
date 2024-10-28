@@ -9,6 +9,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   label: 'label'
 })
+
 const emit = defineEmits(['update:modelValue'])
 const value = computed({
   get: () => props.modelValue,

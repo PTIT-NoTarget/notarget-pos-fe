@@ -2,6 +2,7 @@
 
 import { productService } from '@/services/ProductService'
 import { debounce } from 'lodash'
+import {useToast} from "vue-toastification";
 
 const emit = defineEmits()
 const selectedItem = ref<any>(null)
@@ -40,7 +41,6 @@ const debouncedSearch = debounce((query: string) => {
 }, 400)
 
 watch(() => searchQuery.value, (newVal: string, oldValue: string) => {
-  console.log('newVal: ', newVal)
   if (newVal.length > oldValue.length) {
     typingCount.value++
   }
@@ -53,6 +53,7 @@ watch(() => searchQuery.value, (newVal: string, oldValue: string) => {
       productService.getProductByCode(newVal)
         .then((res: any) => {
           emit('add', res.data.data)
+          useToast().success(res.data.result.message)
         })
         .finally(() => {
           selectedItem.value = null

@@ -15,7 +15,7 @@ const paymentMethods: any[] = [
   },
 ]
 
-onMounted(() => {
+onUpdated(() => {
   if (!props.info['payment']) {
     props.info['payment'] = paymentMethods.find((item) => item.isDefault)
   }
@@ -38,7 +38,7 @@ onMounted(() => {
       <SellInfoSelect title="Hình thức chuyển khoản :" v-model="info['payment']" :list="paymentMethods"/>
       <template v-if="info['payment'] && info['payment'].id === 'chuyenkhoan'">
         <v-img
-          :src="'https://img.vietqr.io/image/mbbank-3806062003-qr_only.jpg?amount=5000&addInfo=Ngo%20Dang%20Han&accountName=NGO%20DANG%20HAN'"
+          :src="`https://img.vietqr.io/image/mbbank-3806062003-qr_only.jpg?amount=${info['final']}&addInfo=Ngo%20Dang%20Han&accountName=NGO%20DANG%20HAN`"
           width="200"
           height="200"
           class="mx-auto mt-3"
