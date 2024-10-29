@@ -80,7 +80,7 @@ const rightMenu = [
 <template>
   <v-app-bar
     color="primary"
-    density="default"
+    density="compact"
   >
     <template v-slot:prepend>
       <v-btn :to="'/'" rounded density="default" :active="false">
@@ -101,11 +101,8 @@ const rightMenu = [
             v-bind="props"
             style="margin-right: 12px"
           >
-            <v-avatar
-              color="brown"
-              size="large"
-            >
-              <span class="text-h5">{{ user.initials }}</span>
+            <v-avatar color="brown">
+              <span class="text-h6">{{ user.initials }}</span>
             </v-avatar>
           </v-btn>
         </template>

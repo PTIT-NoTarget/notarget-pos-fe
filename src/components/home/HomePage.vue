@@ -4,7 +4,7 @@
 <template>
   <v-container fluid class="pa-1">
     <v-row gutters="1" :dense="true">
-      <v-col cols="10" style="height: calc(100vh - 64px)">
+      <v-col cols="10" style="height: calc(100vh - 48px)">
         <v-card
           color="primary"
           variant="tonal"
@@ -12,26 +12,25 @@
           rounded
           height="14%"
           :style="{
-            'margin': '0.5% auto'
+            'margin': '0.5% auto',
+            'width': '100%'
           }"
         >
           <v-card-item>
-            <div>
-              <div class="text-h4 mb-1">
-                Doanh thu hôm nay
-              </div>
-              <v-divider></v-divider>
-              <v-row style="font-size: 24px">
-                <v-col cols="6">
-                  <v-icon>mdi-package-variant-closed</v-icon>
-                  Đơn hàng: <strong>10</strong>
-                </v-col>
-                <v-col cols="6">
-                  <v-icon>mdi-cash</v-icon>
-                  Doanh thu: <strong>10.000.000</strong>
-                </v-col>
-              </v-row>
+            <div class="text-h4 mb-1">
+              Doanh thu hôm nay
             </div>
+            <v-divider class="mb-4"></v-divider>
+            <v-row style="font-size: 24px; height: 100%; display: flex; ">
+              <v-col cols="6">
+                <v-icon>mdi-package-variant-closed</v-icon>
+                Đơn hàng: <strong>10</strong>
+              </v-col>
+              <v-col cols="6">
+                <v-icon>mdi-cash</v-icon>
+                Doanh thu: <strong>10.000.000</strong>
+              </v-col>
+            </v-row>
           </v-card-item>
         </v-card>
         <v-card
@@ -52,7 +51,7 @@
         </v-card>
       </v-col>
 
-      <v-col cols="2" style="height: calc(100vh - 64px)">
+      <v-col cols="2" style="height: calc(100vh - 48px)">
         <v-card
           color="primary"
           variant="tonal"

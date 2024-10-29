@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {viewService} from '@/services/ViewService'
+import { viewService } from '@/services/ViewService'
 
 const headers = ref<any[]>([])
 const itemsMap = ref<Map<number, any[]>>(new Map())
@@ -12,7 +12,7 @@ const rowActions = ref<any[]>([
   },
 ])
 const activeTab = ref<number>(-1)
-const tabs = ref<any[]>([]);
+const tabs = ref<any[]>([])
 const viewName = 'product_list_sell'
 
 onMounted(() => {
@@ -104,12 +104,12 @@ const addNewRow = (item: any) => {
 }
 
 const addNewTab = () => {
-  let maxId = 0;
+  let maxId = 0
   tabs.value.forEach((tab) => {
     if (tab.id > maxId) {
-      maxId = tab.id;
+      maxId = tab.id
     }
-  });
+  })
 
   tabs.value.push({
     id: maxId + 1,
@@ -167,9 +167,29 @@ const removeTab = (id: number) => {
           <v-icon>mdi-plus</v-icon>
         </v-tab>
       </v-tabs>
-      <v-btn icon class="mx-2" size="40px">
-        <v-icon>mdi-dots-vertical</v-icon>
-      </v-btn>
+      <v-menu
+        rounded
+        open-on-hover
+      >
+        <template v-slot:activator="{ props }">
+          <v-btn icon v-bind="props" style="margin-right: 12px">
+            <v-icon>mdi-dots-vertical</v-icon>
+          </v-btn>
+        </template>
+        <v-card>
+          <v-card-text>
+            <div class="mx-auto text-center">
+              <v-btn variant="text" rounded :to="'/'">
+                Trang chủ
+              </v-btn>
+              <v-divider class="my-3"></v-divider>
+              <v-btn variant="text" rounded>
+                Đăng xuất
+              </v-btn>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-menu>
     </v-col>
   </v-row>
   <v-divider thickness="4"></v-divider>

@@ -32,9 +32,27 @@ const emit = defineEmits()
 
 const tableHeight = computed(() => {
   const itemCount = Math.min((props.items ? props.items.length : 0), props.filter['pageSize']) + 1
-  const calculatedHeight = itemCount * rowHeight
+  const calculatedHeight = itemCount * rowHeight + 10
   return Math.min(calculatedHeight, props.height) + 'px'
 })
+
+const fixedCols = computed(() => {
+  let leftFixedCount = 0;
+  let rightFixedCount = 0;
+
+  for (const column of props.columns) {
+    if (column['fixed'] === -1) {
+      leftFixedCount++;
+    } else if (column['fixed'] === 1) {
+      rightFixedCount++;
+    }
+  }
+
+  return {
+    left: leftFixedCount,
+    right: rightFixedCount,
+  };
+});
 
 const isSelectAll = ref(false)
 const selectedItems = ref(new Set())
@@ -100,8 +118,9 @@ const activeColor = '#d1dfe3'
     :hide-default-footer="!havePagination"
   >
     <template v-slot:headers="{ columns }">
-      <tr :style="{ backgroundColor: headerColor }">
-        <td v-if="showSelected" :style="widthStyle('50px')">
+      <tr>
+        <td v-if="showSelected" :style="{...widthStyle('50px'), backgroundColor: headerColor}"
+            class="v-data-table-column--fixed">
           <v-checkbox
             v-model="isSelectAll"
             :indeterminate="selectedItems.size > 0 && !isSelectAll"
@@ -111,8 +130,10 @@ const activeColor = '#d1dfe3'
           ></v-checkbox>
         </td>
         <template v-for="column in columns" :key="column['key_name']">
-          <td :style="widthStyle(column['width'])">
-            <span class="text-h6">{{ column['key_title'] }}</span>
+          <td :style="{...widthStyle(column['width']), backgroundColor: headerColor}" class="text-center"
+            :class="column['key_name'] === 'actions' ? 'v-data-table-column--last-fixed v-data-table-column--fixed' : ''"
+          >
+            <span style="font-size: 18px;font-weight: bold">{{ column['key_title'] }}</span>
           </td>
         </template>
       </tr>
@@ -121,7 +142,7 @@ const activeColor = '#d1dfe3'
       <tr :style="(activeItem.id === item.id && highlightRow) ? {backgroundColor: activeColor} : {}"
           @click="handleRowClick(item)"
       >
-        <td v-if="showSelected" :style="widthStyle('50px')">
+        <td v-if="showSelected" :style="widthStyle('50px')" class="v-data-table-column--fixed">
           <v-checkbox
             :model-value="selectedItems.has(item.id)"
             hide-details
@@ -139,14 +160,14 @@ const activeColor = '#d1dfe3'
                       <v-select
                         v-bind="props"
                         :items="selectMap?.get(column['key_name'])"
-                        v-model="item[column['key_name']]"
+                        v-model="item[column['relate_table']]"
                         density="compact"
                         hide-details="auto"
                         item-title="name"
                         return-object
                       ></v-select>
                     </template>
-                    <span>{{ item[column['key_name']].name }}</span>
+                    <span>{{ item[column['relate_table']]['relate_column'] }}</span>
                   </v-tooltip>
 
                 </template>
@@ -154,10 +175,10 @@ const activeColor = '#d1dfe3'
                   <v-tooltip location="top">
                     <template v-slot:activator="{ props }">
                       <span v-bind="props">
-                        {{ item[column['key_name']].name }}
+                        {{ item[column['relate_table']]['relate_column'] }}
                       </span>
                     </template>
-                    <span>{{ item[column['key_name']].name }}</span>
+                    <span>{{ item[column['relate_table']]['relate_column'] }}</span>
                   </v-tooltip>
                 </template>
               </template>
@@ -216,6 +237,7 @@ const activeColor = '#d1dfe3'
           </template>
           <template v-else>
             <td
+              class="v-data-table-column--last-fixed v-data-table-column--fixed"
               :style="{ ...widthStyle(column['width']), display: 'flex', justifyContent:'center',  alignItems:'center'}"
             >
               <template v-for="action in rowActions" :key="action.label">
@@ -250,4 +272,9 @@ const activeColor = '#d1dfe3'
 
 .v-btn--size-default
   min-width: 0 !important
+
+.v-data-table-column--last-fixed
+  right: 0
+  border-left: 1px solid rgba(var(--v-border-color), var(--v-border-opacity))
+
 </style>
