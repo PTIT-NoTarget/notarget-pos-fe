@@ -18,8 +18,10 @@ const headers = ref<any[]>([])
 const items = ref<any[]>([])
 const selected = ref<any[]>([])
 const viewName = 'product_list'
+const loading = ref<boolean>(false)
 
 onMounted(() => {
+  loading.value = true
   viewService.getViewByViewName(viewName)
     .then((res: any) => {
       headers.value = res.data.data
@@ -31,7 +33,11 @@ onMounted(() => {
     .then((res: any) => {
       items.value = res.data.data
     })
+    .finally(() => {
+      loading.value = false
+    })
 })
+
 
 
 </script>
@@ -51,6 +57,7 @@ onMounted(() => {
         :have-pagination="true"
         :show-selected="true"
         :selected.sync="selected"
+        :loading="loading"
       />
     </v-col>
   </v-row>

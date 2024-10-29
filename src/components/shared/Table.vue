@@ -101,7 +101,7 @@ const handleSelectRow = (event: Event, item: any) => {
   props.selected.splice(0, props.selected.length, ...Array.from(selectedItems.value))
 }
 
-const columnStyle = (column: any, isHeader: boolean = false) => {
+const columnStyle = (column: any, isHeader: boolean = false, item?: any) => {
   let basic: any = {
     width: column['width'],
     minWidth: column['width'],
@@ -109,7 +109,7 @@ const columnStyle = (column: any, isHeader: boolean = false) => {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    backgroundColor: isHeader ? headerColor : 'white',
+    backgroundColor: isHeader ? headerColor : (activeItem.value.id === item?.id ? activeColor : 'white'),
     // border: '0.5px solid rgba(0, 0, 0, 0.1)',
     position: 'relative',
   }
@@ -118,7 +118,7 @@ const columnStyle = (column: any, isHeader: boolean = false) => {
       ...basic,
       right: column['fixedPx'] + 'px',
       position: 'sticky',
-      backgroundColor: isHeader ? headerColor : 'white',
+      backgroundColor: isHeader ? headerColor : (activeItem.value.id === item?.id ? activeColor : 'white'),
       zIndex: isHeader ? 100 : 1,
       boxShadow: column['lastLeft'] ? '-2px 0 5px -2px rgba(0, 0, 0, 0.5)' : 'none',
     }
@@ -127,7 +127,7 @@ const columnStyle = (column: any, isHeader: boolean = false) => {
       ...basic,
       left: column['fixedPx'] + 'px',
       position: 'sticky',
-      backgroundColor: isHeader ? headerColor : 'white',
+      backgroundColor: isHeader ? headerColor : (activeItem.value.id === item?.id ? activeColor : 'white'),
       zIndex: isHeader ? 100 : 1,
       boxShadow: column['firstRight'] ? '2px 0 5px -2px rgba(0, 0, 0, 0.5)' : 'none',
     }
@@ -183,10 +183,8 @@ const activeColor = '#d1dfe3'
       </tr>
     </template>
     <template v-slot:item="{ item, columns }">
-      <tr :style="(activeItem.id === item.id && highlightRow) ? {backgroundColor: activeColor} : {}"
-          @click="handleRowClick(item)"
-      >
-        <td v-if="showSelected" :style="columnStyle({width: '50px', is_fixed: -1, fixedPx: 0})">
+      <tr @click="handleRowClick(item)">
+        <td v-if="showSelected" :style="columnStyle({width: '50px', is_fixed: -1, fixedPx: 0},false, item)">
           <v-checkbox
             :model-value="selectedItems.has(item.id)"
             hide-details
@@ -196,7 +194,7 @@ const activeColor = '#d1dfe3'
         </td>
         <template v-for="column in columns" :key="column['key_name']">
           <template v-if="column['key_name'] !== 'actions'">
-            <td :style="columnStyle(column)">
+            <td :style="columnStyle(column,false, item)">
               <template v-if="column['data_type'] === DataType.RELATION">
                 <template v-if="column['is_edit']">
                   <v-tooltip location="top">
@@ -283,7 +281,7 @@ const activeColor = '#d1dfe3'
 
           </template>
           <template v-else>
-            <td :style="{ ...columnStyle(column)}" class="text-center">
+            <td :style="{ ...columnStyle(column, false, item)}" class="text-center">
               <template v-for="action in rowActions" :key="action.label">
                 <v-btn density="comfortable" @click="action.action(item)" rounded class="mx-1">
                   <v-icon :icon="'mdi-' + action.icon"></v-icon>
