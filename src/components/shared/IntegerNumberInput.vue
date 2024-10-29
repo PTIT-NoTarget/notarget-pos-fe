@@ -79,9 +79,9 @@ const handleNumberChange = (currentValue: any, change: number) => {
     <template v-if="tooltip">
       <v-tooltip location="top">
         <template v-slot:activator="{ props }">
-        <span v-bind="props" class="d-block text-right">
-          {{ formatIntegerNumber(value) }}
-        </span>
+          <span v-bind="props" class="d-block text-right">
+            {{ formatIntegerNumber(value) }}
+          </span>
         </template>
         <span>{{ formatIntegerNumber(value) }}</span>
       </v-tooltip>

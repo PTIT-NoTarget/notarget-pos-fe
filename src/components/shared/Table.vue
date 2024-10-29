@@ -36,23 +36,44 @@ const tableHeight = computed(() => {
   return Math.min(calculatedHeight, props.height) + 'px'
 })
 
-const fixedCols = computed(() => {
-  let leftFixedCount = 0;
-  let rightFixedCount = 0;
+const pxToNumber = (px: string) => {
+  return Number(px.replace('px', ''))
+}
 
-  for (const column of props.columns) {
-    if (column['fixed'] === -1) {
-      leftFixedCount++;
-    } else if (column['fixed'] === 1) {
-      rightFixedCount++;
+const tableHeaders = computed(() => {
+  let header: any[] = []
+  let fixedLeftPx: number = props.showSelected ? 50 : 0
+  let fixedRightPx: number = 0
+  let firstRightColumn: any = null
+  let lastLeftColumn: any = null
+  for (let i = 0; i < props.columns.length; i++) {
+    const column = props.columns[i]
+    if (column?.is_fixed === -1) {
+      lastLeftColumn = column
+    } else if (column?.is_fixed === 1 && !firstRightColumn) {
+      firstRightColumn = column
     }
   }
 
-  return {
-    left: leftFixedCount,
-    right: rightFixedCount,
-  };
-});
+  for (let i = 0; i < props.columns.length; i++) {
+    const column = props.columns[i]
+    let fixedPx: number = 0
+    if (column?.is_fixed === -1) {
+      fixedPx = fixedLeftPx
+      fixedLeftPx += pxToNumber(column?.width)
+    } else if (column?.is_fixed === 1) {
+      fixedPx = fixedRightPx
+      fixedRightPx += pxToNumber(column?.width)
+    }
+    header.push({
+      ...column,
+      fixedPx: fixedPx,
+      lastLeft: column?.keyName === lastLeftColumn?.keyName,
+      firstRight: column?.keyName === firstRightColumn?.keyName,
+    })
+  }
+  return header
+})
 
 const isSelectAll = ref(false)
 const selectedItems = ref(new Set())
@@ -80,15 +101,38 @@ const handleSelectRow = (event: Event, item: any) => {
   props.selected.splice(0, props.selected.length, ...Array.from(selectedItems.value))
 }
 
-const widthStyle: any = (width: string) => {
-  return {
-    width: width,
-    minWidth: width,
-    maxWidth: width,
+const columnStyle = (column: any, isHeader: boolean = false) => {
+  let basic: any = {
+    width: column['width'],
+    minWidth: column['width'],
+    maxWidth: column['width'],
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
+    backgroundColor: isHeader ? headerColor : 'white',
+    // border: '0.5px solid rgba(0, 0, 0, 0.1)',
+    position: 'relative',
   }
+  if (column?.is_fixed === 1) {
+    return {
+      ...basic,
+      right: column['fixedPx'] + 'px',
+      position: 'sticky',
+      backgroundColor: isHeader ? headerColor : 'white',
+      zIndex: isHeader ? 100 : 1,
+      boxShadow: column['lastLeft'] ? '-2px 0 5px -2px rgba(0, 0, 0, 0.5)' : 'none',
+    }
+  } else if (column?.is_fixed === -1) {
+    return {
+      ...basic,
+      left: column['fixedPx'] + 'px',
+      position: 'sticky',
+      backgroundColor: isHeader ? headerColor : 'white',
+      zIndex: isHeader ? 100 : 1,
+      boxShadow: column['firstRight'] ? '2px 0 5px -2px rgba(0, 0, 0, 0.5)' : 'none',
+    }
+  }
+  return basic
 }
 
 const handleRowClick = (item: any) => {
@@ -107,7 +151,7 @@ const activeColor = '#d1dfe3'
 
 <template>
   <v-data-table-server
-    :headers="columns"
+    :headers="tableHeaders"
     :items="items"
     :items-length="totalData ?? (items ? items.length : 0)"
     fixed-header
@@ -119,8 +163,8 @@ const activeColor = '#d1dfe3'
   >
     <template v-slot:headers="{ columns }">
       <tr>
-        <td v-if="showSelected" :style="{...widthStyle('50px'), backgroundColor: headerColor}"
-            class="v-data-table-column--fixed">
+        <td v-if="showSelected" :style="columnStyle({width: '50px', is_fixed: -1, fixedPx: 0}, true)"
+        >
           <v-checkbox
             v-model="isSelectAll"
             :indeterminate="selectedItems.size > 0 && !isSelectAll"
@@ -130,19 +174,19 @@ const activeColor = '#d1dfe3'
           ></v-checkbox>
         </td>
         <template v-for="column in columns" :key="column['key_name']">
-          <td :style="{...widthStyle(column['width']), backgroundColor: headerColor}" class="text-center"
-            :class="column['key_name'] === 'actions' ? 'v-data-table-column--last-fixed v-data-table-column--fixed' : ''"
+          <td :style="columnStyle(column, true)"
+              class="text-center"
           >
             <span style="font-size: 18px;font-weight: bold">{{ column['key_title'] }}</span>
           </td>
         </template>
       </tr>
     </template>
-    <template v-slot:item="{ item }">
+    <template v-slot:item="{ item, columns }">
       <tr :style="(activeItem.id === item.id && highlightRow) ? {backgroundColor: activeColor} : {}"
           @click="handleRowClick(item)"
       >
-        <td v-if="showSelected" :style="widthStyle('50px')" class="v-data-table-column--fixed">
+        <td v-if="showSelected" :style="columnStyle({width: '50px', is_fixed: -1, fixedPx: 0})">
           <v-checkbox
             :model-value="selectedItems.has(item.id)"
             hide-details
@@ -152,7 +196,7 @@ const activeColor = '#d1dfe3'
         </td>
         <template v-for="column in columns" :key="column['key_name']">
           <template v-if="column['key_name'] !== 'actions'">
-            <td :style="widthStyle(column['width'])">
+            <td :style="columnStyle(column)">
               <template v-if="column['data_type'] === DataType.RELATION">
                 <template v-if="column['is_edit']">
                   <v-tooltip location="top">
@@ -174,7 +218,7 @@ const activeColor = '#d1dfe3'
                 <template v-else>
                   <v-tooltip location="top">
                     <template v-slot:activator="{ props }">
-                      <span v-bind="props">
+                      <span v-bind="props" class="d-block text-right">
                         {{ item[column['relate_table']]['relate_column'] }}
                       </span>
                     </template>
@@ -182,7 +226,7 @@ const activeColor = '#d1dfe3'
                   </v-tooltip>
                 </template>
               </template>
-              <template v-else-if=" column['data_type'] === DataType.INTEGER || column['data_type'] === DataType.LONG">
+              <template v-else-if="column['data_type'] === DataType.INTEGER || column['data_type'] === DataType.LONG">
                 <IntegerNumberInput
                   :editable="column['is_edit']"
                   :tooltip="true"
@@ -201,9 +245,12 @@ const activeColor = '#d1dfe3'
 
                 </template>
                 <template v-else>
-                  <v-avatar
+                  <v-img
                     :src="item[column['key_name']]"
-                  ></v-avatar>
+                    width="40"
+                    height="40"
+                    rounded
+                  ></v-img>
                 </template>
               </template>
               <template v-else>
@@ -224,7 +271,7 @@ const activeColor = '#d1dfe3'
                 <template v-else>
                   <v-tooltip location="top">
                     <template v-slot:activator="{ props }">
-                      <span v-bind="props">
+                      <span v-bind="props" class="d-block text-right">
                         {{ item[column['key_name']] }}
                       </span>
                     </template>
@@ -236,12 +283,9 @@ const activeColor = '#d1dfe3'
 
           </template>
           <template v-else>
-            <td
-              class="v-data-table-column--last-fixed v-data-table-column--fixed"
-              :style="{ ...widthStyle(column['width']), display: 'flex', justifyContent:'center',  alignItems:'center'}"
-            >
+            <td :style="{ ...columnStyle(column)}" class="text-center">
               <template v-for="action in rowActions" :key="action.label">
-                <v-btn density="comfortable" @click="action.action(item)">
+                <v-btn density="comfortable" @click="action.action(item)" rounded class="mx-1">
                   <v-icon :icon="'mdi-' + action.icon"></v-icon>
                   {{ action.label }}
                 </v-btn>
@@ -269,12 +313,8 @@ const activeColor = '#d1dfe3'
 .v-input__append
   margin-inline-start: 0 !important
 
-
 .v-btn--size-default
   min-width: 0 !important
-
-.v-data-table-column--last-fixed
-  right: 0
-  border-left: 1px solid rgba(var(--v-border-color), var(--v-border-opacity))
+  padding: 0 8px !important
 
 </style>

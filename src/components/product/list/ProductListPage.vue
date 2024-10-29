@@ -4,6 +4,11 @@ import { viewService } from '@/services/ViewService'
 
 const rowActions = ref<any[]>([
   {
+    icon: 'pencil',
+    label: '',
+    action: (item: any) => {},
+  },
+  {
     icon: 'delete',
     label: '',
     action: (item: any) => {},
@@ -20,7 +25,7 @@ onMounted(() => {
       headers.value = res.data.data
       return productService.searchProduct(viewName, {
         pageNumber: 0,
-        pageSize: 10,
+        pageSize: 20,
       })
     })
     .then((res: any) => {
