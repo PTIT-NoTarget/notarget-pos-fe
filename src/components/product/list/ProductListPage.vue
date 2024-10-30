@@ -14,6 +14,18 @@ const rowActions = ref<any[]>([
     action: (item: any) => {},
   },
 ])
+const tableActions = ref<any[]>([
+  {
+    icon: 'plus',
+    label: 'Thêm',
+    action: () => {},
+  },
+  {
+    icon: 'delete',
+    label: 'Xóa',
+    action: () => {},
+  },
+])
 const headers = ref<any[]>([])
 const items = ref<any[]>([])
 const selected = ref<any[]>([])
@@ -58,6 +70,8 @@ onMounted(() => {
         :show-selected="true"
         :selected.sync="selected"
         :loading="loading"
+        :table-actions="tableActions"
+        :show-search="true"
       />
     </v-col>
   </v-row>

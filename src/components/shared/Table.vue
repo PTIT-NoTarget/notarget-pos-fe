@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { DataType } from '@/utils/Constant'
+import {DataType} from '@/utils/Constant'
 
 const props = withDefaults(defineProps<{
   height?: number;
@@ -14,6 +14,7 @@ const props = withDefaults(defineProps<{
   loading?: boolean;
   highlightRow?: boolean;
   tableActions?: any[];
+  showSearch?: boolean;
   havePagination?: boolean;
 }>(), {
   height: 600,
@@ -21,6 +22,7 @@ const props = withDefaults(defineProps<{
   highlightRow: false,
   loading: false,
   havePagination: true,
+  showSearch: false,
   filter: () => ({
     pageNumber: 1,
     pageSize: 1000000,
@@ -31,9 +33,13 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits()
 
 const tableHeight = computed(() => {
-  const itemCount = Math.min((props.items ? props.items.length : 0), props.filter['pageSize']) + 1
-  const calculatedHeight = itemCount * rowHeight + 10
-  return Math.min(calculatedHeight, props.height) + 'px'
+  let itemCount = Math.min((props.items ? props.items.length : 0), props.filter['pageSize']) + 1
+  let calculatedHeight = itemCount * rowHeight + 10
+  let finalHeight = Math.min(calculatedHeight, props.height);
+  if(props.tableActions && props.tableActions.length > 0) {
+    finalHeight -= 60
+  }
+  return finalHeight + 'px'
 })
 
 const pxToNumber = (px: string) => {
@@ -77,7 +83,7 @@ const tableHeaders = computed(() => {
 
 const isSelectAll = ref(false)
 const selectedItems = ref(new Set())
-const activeItem = ref<any>({ id: -1 })
+const activeItem = ref<any>({id: -1})
 
 const handleSelectAll = (event: Event) => {
   const checked = (event.target as HTMLInputElement).checked
@@ -109,8 +115,7 @@ const columnStyle = (column: any, isHeader: boolean = false, item?: any) => {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    backgroundColor: isHeader ? headerColor : (activeItem.value.id === item?.id ? activeColor : 'white'),
-    // border: '0.5px solid rgba(0, 0, 0, 0.1)',
+    backgroundColor: isHeader ? headerColor : (props.highlightRow && activeItem.value.id === item?.id ? activeColor : 'white'),
     position: 'relative',
   }
   if (column?.is_fixed === 1) {
@@ -118,7 +123,7 @@ const columnStyle = (column: any, isHeader: boolean = false, item?: any) => {
       ...basic,
       right: column['fixedPx'] + 'px',
       position: 'sticky',
-      backgroundColor: isHeader ? headerColor : (activeItem.value.id === item?.id ? activeColor : 'white'),
+      backgroundColor: isHeader ? headerColor : (props.highlightRow && activeItem.value.id === item?.id ? activeColor : 'white'),
       zIndex: isHeader ? 100 : 1,
       boxShadow: column['lastLeft'] ? '-2px 0 5px -2px rgba(0, 0, 0, 0.5)' : 'none',
     }
@@ -150,6 +155,29 @@ const activeColor = '#d1dfe3'
 </script>
 
 <template>
+  <template v-if="props.tableActions && props.tableActions.length > 0">
+    <div style="height: 42px;display: flex;align-items: center;justify-content: space-between">
+      <div >
+        <v-text-field
+          v-if="showSearch"
+          v-model="filter['common']"
+          density="compact"
+          hide-details="auto"
+          type="text"
+          append-inner-icon="mdi-magnify"
+          width="300px"
+        ></v-text-field>
+      </div>
+      <div>
+        <template v-for="action in props.tableActions" :key="action.label">
+          <v-btn @click="action.action" color="primary" class="mx-1">
+            <v-icon :icon="'mdi-' + action.icon"></v-icon>
+            {{ action.label }}
+          </v-btn>
+        </template>
+      </div>
+    </div>
+  </template>
   <v-data-table-server
     :headers="tableHeaders"
     :items="items"
@@ -161,8 +189,8 @@ const activeColor = '#d1dfe3'
     :loading="loading"
     :hide-default-footer="!havePagination"
   >
-    <template v-slot:headers="{ columns }">
-      <tr>
+    <template v-slot:headers="{ columns, props }">
+      <tr v-bind="props">
         <td v-if="showSelected" :style="columnStyle({width: '50px', is_fixed: -1, fixedPx: 0}, true)"
         >
           <v-checkbox
@@ -182,8 +210,8 @@ const activeColor = '#d1dfe3'
         </template>
       </tr>
     </template>
-    <template v-slot:item="{ item, columns }">
-      <tr @click="handleRowClick(item)">
+    <template v-slot:item="{ item, columns, props }">
+      <tr @click="handleRowClick(item)" v-bind="props">
         <td v-if="showSelected" :style="columnStyle({width: '50px', is_fixed: -1, fixedPx: 0},false, item)">
           <v-checkbox
             :model-value="selectedItems.has(item.id)"
