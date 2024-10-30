@@ -1,29 +1,46 @@
 <script setup lang="ts">
 import { productService } from '@/services/ProductService'
 import { viewService } from '@/services/ViewService'
+import { debounce } from 'lodash'
 
 const rowActions = ref<any[]>([
   {
     icon: 'pencil',
     label: '',
-    action: (item: any) => {},
+    action: (item: any) => {
+    },
   },
   {
     icon: 'delete',
     label: '',
-    action: (item: any) => {},
+    action: (item: any) => {
+    },
   },
 ])
 const tableActions = ref<any[]>([
   {
-    icon: 'plus',
+    icon: 'import',
+    label: 'Import',
+    action: () => {
+    },
+  },
+  {
+    icon: 'export',
+    label: 'Export',
+    action: () => {
+    },
+  },
+  {
+    icon: 'plus-circle-outline',
     label: 'Thêm',
-    action: () => {},
+    action: () => {
+    },
   },
   {
     icon: 'delete',
     label: 'Xóa',
-    action: () => {},
+    action: () => {
+    },
   },
 ])
 const headers = ref<any[]>([])
@@ -31,6 +48,13 @@ const items = ref<any[]>([])
 const selected = ref<any[]>([])
 const viewName = 'product_list'
 const loading = ref<boolean>(false)
+const filter = ref<any>({
+  pageNumber: 1,
+  pageSize: 20,
+  common: '',
+  filter: {},
+})
+const totalData = ref<number>(0)
 
 onMounted(() => {
   loading.value = true
@@ -38,18 +62,43 @@ onMounted(() => {
     .then((res: any) => {
       headers.value = res.data.data
       return productService.searchProduct(viewName, {
+        ...filter.value,
         pageNumber: 0,
-        pageSize: 20,
       })
     })
+    .then((res: any) => {
+      items.value = res.data.data
+      totalData.value = res.data.data_count
+    })
+    .finally(() => {
+      loading.value = false
+    })
+
+})
+
+const getProductList = debounce(() => {
+  loading.value = true
+  productService.searchProduct(viewName, {
+    ...filter.value,
+    pageNumber: filter.value.pageNumber - 1,
+  })
     .then((res: any) => {
       items.value = res.data.data
     })
     .finally(() => {
       loading.value = false
     })
-})
+}, 500)
 
+watch(
+  filter,
+  () => {
+    getProductList()
+  },
+  {
+    deep: true,
+  }
+)
 
 
 </script>
@@ -72,6 +121,9 @@ onMounted(() => {
         :loading="loading"
         :table-actions="tableActions"
         :show-search="true"
+        :filter="filter"
+        :have-filter="true"
+        :total-data="totalData"
       />
     </v-col>
   </v-row>
