@@ -1,6 +1,6 @@
 import api from '@/services/interceptors'
 
-export const productService = {
+export const ProductService = {
   searchProduct (viewName: string, filter: any) {
     return api.post(
       `product/search/${viewName}`,
@@ -14,7 +14,7 @@ export const productService = {
 
   deleteMultiProduct (ids: any) {
     return api.delete(`product/multi`, {
-      data: { ids: ids },
+      data: ids,
     })
   },
 

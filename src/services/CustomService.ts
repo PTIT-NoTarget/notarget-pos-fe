@@ -1,6 +1,6 @@
 import api from '@/services/interceptors'
 
-export const customService = {
+export const CustomService = {
   getAutoComplete (
     tableName: string,
     keyName: string,

@@ -94,8 +94,15 @@ const tableItems = computed(() => {
   return props.items
 })
 
+const modelSelected = computed({
+  get: () => props.selected,
+  set: (newValue) => {
+    emit('update:selected', newValue)
+  }
+})
+
 const isSelectAll = ref(false)
-const selectedItems = ref(new Set())
+// const selectedItems = ref(new Set())
 const activeItem = ref<any>({ id: -1 })
 const columnFilter = ref<any>({})
 
@@ -103,23 +110,31 @@ const handleSelectAll = (event: Event) => {
   const checked = (event.target as HTMLInputElement).checked
   isSelectAll.value = checked
   if (checked) {
-    props.items.forEach((item: any) => selectedItems.value.add(item.id))
+    modelSelected.value = props.items.map(item => item.id)
   } else {
-    selectedItems.value.clear()
+    modelSelected.value = []
   }
-  props.selected.splice(0, props.selected.length, ...Array.from(selectedItems.value))
 }
 
 const handleSelectRow = (event: Event, item: any) => {
   const checked = (event.target as HTMLInputElement).checked
   if (checked) {
-    selectedItems.value.add(item.id)
+    modelSelected.value.push(item.id)
   } else {
-    selectedItems.value.delete(item.id)
+    modelSelected.value = modelSelected.value.filter((id: any) => id !== item.id)
   }
-  isSelectAll.value = props.items.every(item => selectedItems.value.has(item.id))
-  props.selected.splice(0, props.selected.length, ...Array.from(selectedItems.value))
+  isSelectAll.value = modelSelected.value.length === props.items.length
 }
+
+watch(
+  modelSelected,
+  (newVal: any) => {
+    isSelectAll.value = newVal.length === props.items.length
+  },
+  {
+    deep: true,
+  }
+)
 
 const columnStyle = (column: any, isHeader: boolean = false, item?: any) => {
   let basic: any = {
@@ -223,6 +238,7 @@ const activeColor = '#d1dfe3'
     v-model:page="filter['pageNumber']"
     v-model:items-per-page="filter['pageSize']"
     :loading="loading"
+    loading-text="Loading..."
     :hide-default-footer="!havePagination"
   >
     <template v-slot:headers="{ columns, props }">
@@ -231,7 +247,7 @@ const activeColor = '#d1dfe3'
         >
           <v-checkbox
             v-model="isSelectAll"
-            :indeterminate="selectedItems.size > 0 && !isSelectAll"
+            :indeterminate="modelSelected.length > 0 && !isSelectAll"
             hide-details
             density="compact"
             @change="handleSelectAll"
@@ -248,12 +264,10 @@ const activeColor = '#d1dfe3'
     </template>
     <template v-slot:item="{ item, columns, props }">
       <tr @click="handleRowClick(item)" v-bind="props">
-        <td v-if="showSelected" :style="columnStyle({width: '50px', is_fixed: -1, fixedPx: 0},false,
-        item)"
-        >
+        <td v-if="showSelected" :style="columnStyle({width: '50px', is_fixed: -1, fixedPx: 0},false, item)">
           <v-checkbox
             v-if="!item.haveFilter"
-            :model-value="selectedItems.has(item.id)"
+            :model-value="modelSelected.includes(item.id)"
             hide-details
             density="compact"
             @change="(e : any) => handleSelectRow(e, item)"
@@ -351,22 +365,82 @@ const activeColor = '#d1dfe3'
                   ></v-img>
                 </template>
               </template>
+              <template v-else-if="column['data_type'] === DataType.DATETIME">
+<!--                TODO: Datetime in table-->
+<!--                <template v-if="column['is_edit']">-->
+<!--                  <v-tooltip location="top">-->
+<!--                    <template v-slot:activator="{ props }">-->
+<!--                      <v-text-field-->
+<!--                        v-model="item[column['key_name']]"-->
+<!--                        hide-details="auto"-->
+<!--                        type="text"-->
+<!--                        v-bind="props"-->
+<!--                        density="compact"-->
+<!--                      ></v-text-field>-->
+<!--                    </template>-->
+<!--                    <span>{{ item[column['key_name']] }}</span>-->
+<!--                  </v-tooltip>-->
+<!--                </template>-->
+<!--                <template v-else-if="item.haveFilter">-->
+<!--                  <v-text-field-->
+<!--                    v-model="columnFilter[column['key_name']]"-->
+<!--                    density="compact"-->
+<!--                    hide-details="auto"-->
+<!--                    type="text"-->
+<!--                    variant="solo-filled"-->
+<!--                    clearable-->
+<!--                  ></v-text-field>-->
+<!--                </template>-->
+<!--                <template v-else>-->
+<!--                  <v-tooltip location="top">-->
+<!--                    <template v-slot:activator="{ props }">-->
+<!--                      <span v-bind="props" class="d-block text-right">-->
+<!--                        {{ item[column['key_name']] }}-->
+<!--                      </span>-->
+<!--                    </template>-->
+<!--                    <span>{{ item[column['key_name']] }}</span>-->
+<!--                  </v-tooltip>-->
+<!--                </template>-->
+              </template>
+              <template v-else-if="column['data_type'] === DataType.BOOLEAN">
+                <!--                TODO: Boolean in table-->
+                <!--                <template v-if="column['is_edit']">-->
+                <!--                  <v-tooltip location="top">-->
+                <!--                    <template v-slot:activator="{ props }">-->
+                <!--                      <v-text-field-->
+                <!--                        v-model="item[column['key_name']]"-->
+                <!--                        hide-details="auto"-->
+                <!--                        type="text"-->
+                <!--                        v-bind="props"-->
+                <!--                        density="compact"-->
+                <!--                      ></v-text-field>-->
+                <!--                    </template>-->
+                <!--                    <span>{{ item[column['key_name']] }}</span>-->
+                <!--                  </v-tooltip>-->
+                <!--                </template>-->
+                <!--                <template v-else-if="item.haveFilter">-->
+                <!--                  <v-text-field-->
+                <!--                    v-model="columnFilter[column['key_name']]"-->
+                <!--                    density="compact"-->
+                <!--                    hide-details="auto"-->
+                <!--                    type="text"-->
+                <!--                    variant="solo-filled"-->
+                <!--                    clearable-->
+                <!--                  ></v-text-field>-->
+                <!--                </template>-->
+                <!--                <template v-else>-->
+                <!--                  <v-tooltip location="top">-->
+                <!--                    <template v-slot:activator="{ props }">-->
+                <!--                      <span v-bind="props" class="d-block text-right">-->
+                <!--                        {{ item[column['key_name']] }}-->
+                <!--                      </span>-->
+                <!--                    </template>-->
+                <!--                    <span>{{ item[column['key_name']] }}</span>-->
+                <!--                  </v-tooltip>-->
+                <!--                </template>-->
+              </template>
               <template v-else>
-                <template v-if="column['is_edit']">
-                  <v-tooltip location="top">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field
-                        v-model="item[column['key_name']]"
-                        hide-details="auto"
-                        type="text"
-                        v-bind="props"
-                        density="compact"
-                      ></v-text-field>
-                    </template>
-                    <span>{{ item[column['key_name']] }}</span>
-                  </v-tooltip>
-                </template>
-                <template v-else-if="item.haveFilter">
+                <template v-if="item.haveFilter">
                   <v-text-field
                     v-model="columnFilter[column['key_name']]"
                     density="compact"
@@ -377,14 +451,11 @@ const activeColor = '#d1dfe3'
                   ></v-text-field>
                 </template>
                 <template v-else>
-                  <v-tooltip location="top">
-                    <template v-slot:activator="{ props }">
-                      <span v-bind="props" class="d-block text-right">
-                        {{ item[column['key_name']] }}
-                      </span>
-                    </template>
-                    <span>{{ item[column['key_name']] }}</span>
-                  </v-tooltip>
+                  <TextInput
+                    :editable="column['is_edit']"
+                    :tooltip="true"
+                    v-model="item[column['key_name']]"
+                  />
                 </template>
               </template>
             </td>
@@ -416,7 +487,6 @@ const activeColor = '#d1dfe3'
 
 .v-input__prepend
   margin-inline-end: 0 !important
-
 
 .v-input__append
   margin-inline-start: 0 !important

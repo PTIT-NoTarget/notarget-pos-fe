@@ -1,6 +1,6 @@
 import api from '@/services/interceptors'
 
-export const viewService = {
+export const ViewService = {
   getViewByViewName (viewName: string) {
     return api.get(`view/${viewName}`)
   },

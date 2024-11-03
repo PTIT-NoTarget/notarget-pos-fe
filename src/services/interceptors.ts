@@ -1,5 +1,5 @@
+import { useToastStore } from '@/stores/toast'
 import axios from 'axios';
-import { useToast } from "vue-toastification";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_APP_API_BASE_URL,
@@ -19,7 +19,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response: any) => response,
   (error: any) => {
-    useToast().error(error.response.data.result.message);
+    useToastStore().showError(error.response.data.result.message);
     return Promise.reject(error);
   }
 );
