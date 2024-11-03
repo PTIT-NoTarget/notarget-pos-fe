@@ -80,7 +80,7 @@ onMounted(() => {
 
 const getProductList = debounce(() => {
   loading.value = true
-  productService.searchProduct(viewName, {
+  ProductService.searchProduct(viewName, {
     ...filter.value,
     pageNumber: filter.value.pageNumber - 1,
   })
@@ -142,7 +142,7 @@ const exportProduct = () => {
       link.click();
       useToastStore().showSuccess("Export thành công");
     })
-    .catch((err) => {
+    .catch(() => {
       useToastStore().showError("Export thất bại");
     })
     .finally(() => {
