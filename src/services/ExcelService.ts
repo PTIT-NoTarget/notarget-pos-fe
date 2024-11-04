@@ -1,24 +1,29 @@
 import api from '@/services/interceptors'
 
 export const ExcelService = {
-  getExcelTemplate (viewName: string) {
+  getExcelTemplate(viewName: string) {
     return api.get(
       `excel/template/${viewName}`,
-      { responseType: 'blob' }
+      {responseType: 'blob'}
     )
   },
-  exportExcel (viewName: string) {
+  exportExcel(viewName: string) {
     return api.get(
       `excel/export/${viewName}`,
-      { responseType: 'blob' }
+      {responseType: 'blob'}
     )
   },
-  importExcel (viewName: string, file: any) {
+  importExcel(viewName: string, file: any) {
     const formData = new FormData()
     formData.append('file', file)
     return api.post(
       `excel/import/${viewName}`,
-      formData
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
     )
   }
 }

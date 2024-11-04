@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { productService } from '@/services/ProductService'
+import { ProductService } from '@/services/ProductService'
 import { debounce } from 'lodash'
 import {useToast} from "vue-toastification";
 
@@ -50,7 +50,7 @@ watch(() => searchQuery.value, (newVal: string, oldValue: string) => {
   typingCount.value = newVal.length === 0 ? 0 : typingCount.value
   if (newVal !== '') {
     if (typingCount.value < newVal.length) {
-      productService.getProductByCode(newVal)
+      ProductService.getProductByCode(newVal)
         .then((res: any) => {
           emit('add', res.data.data)
           useToast().success(res.data.result.message)

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { DataType } from '@/utils/Constant'
+import {DataType} from '@/utils/Constant'
 
 const props = withDefaults(defineProps<{
   height?: number;
@@ -89,7 +89,7 @@ const tableHeaders = computed(() => {
 
 const tableItems = computed(() => {
   if (props.haveFilter) {
-    return [{ haveFilter: true }, ...props.items]
+    return [{haveFilter: true}, ...props.items]
   }
   return props.items
 })
@@ -101,9 +101,16 @@ const modelSelected = computed({
   }
 })
 
+const modelLoading = computed({
+  get: () => props.loading,
+  set: (newValue) => {
+    emit('update:loading', newValue)
+  }
+})
+
 const isSelectAll = ref(false)
 // const selectedItems = ref(new Set())
-const activeItem = ref<any>({ id: -1 })
+const activeItem = ref<any>({id: -1})
 const columnFilter = ref<any>({})
 
 const handleSelectAll = (event: Event) => {
@@ -237,8 +244,6 @@ const activeColor = '#d1dfe3'
     :height="tableHeight"
     v-model:page="filter['pageNumber']"
     v-model:items-per-page="filter['pageSize']"
-    :loading="loading"
-    loading-text="Loading..."
     :hide-default-footer="!havePagination"
   >
     <template v-slot:headers="{ columns, props }">
@@ -262,217 +267,241 @@ const activeColor = '#d1dfe3'
         </template>
       </tr>
     </template>
-    <template v-slot:item="{ item, columns, props }">
-      <tr @click="handleRowClick(item)" v-bind="props">
-        <td v-if="showSelected" :style="columnStyle({width: '50px', is_fixed: -1, fixedPx: 0},false, item)">
-          <v-checkbox
-            v-if="!item.haveFilter"
-            :model-value="modelSelected.includes(item.id)"
-            hide-details
-            density="compact"
-            @change="(e : any) => handleSelectRow(e, item)"
-          ></v-checkbox>
-        </td>
-        <template v-for="column in columns" :key="column['key_name']">
-          <template v-if="column['key_name'] !== 'actions'">
-            <td :style="columnStyle(column,false, item)">
-              <template v-if="column['data_type'] === DataType.RELATION">
-                <template v-if="column['is_edit']">
-                  <!--                  <v-tooltip location="top">-->
-                  <!--                    <template v-slot:activator="{ props }">-->
-                  <!--                      <v-select-->
-                  <!--                        v-bind="props"-->
-                  <!--                        :items="selectMap?.get(column['key_name'])"-->
-                  <!--                        v-model="item[column['relate_table']]"-->
-                  <!--                        density="compact"-->
-                  <!--                        hide-details="auto"-->
-                  <!--                        item-title="name"-->
-                  <!--                        return-object-->
-                  <!--                      ></v-select>-->
-                  <!--                    </template>-->
-                  <!--                    <span>{{ item[column['relate_table']]['relate_column'] }}</span>-->
-                  <!--                  </v-tooltip>-->
-                </template>
-                <template v-else-if="item.haveFilter">
-                  <v-text-field
-                    v-model="columnFilter[column['key_name']]"
-                    density="compact"
-                    hide-details="auto"
-                    type="text"
-                    variant="solo-filled"
-                    clearable
-                  ></v-text-field>
-                </template>
-                <template v-else>
-                  <v-tooltip location="top">
-                    <template v-slot:activator="{ props }">
+    <template v-slot:body="{ items, columns }" style="position: relative">
+      <template v-for="item in items">
+        <tr @click="handleRowClick(item)" v-bind="props">
+          <td v-if="showSelected" :style="columnStyle({width: '50px', is_fixed: -1, fixedPx: 0},false, item)">
+            <v-checkbox
+              v-if="!item.haveFilter"
+              :model-value="modelSelected.includes(item.id)"
+              hide-details
+              density="compact"
+              @change="(e : any) => handleSelectRow(e, item)"
+            ></v-checkbox>
+          </td>
+          <template v-for="column in columns" :key="column['key_name']">
+            <template v-if="column['key_name'] !== 'actions'">
+              <td :style="columnStyle(column,false, item)">
+                <template v-if="column['data_type'] === DataType.RELATION">
+                  <template v-if="column['is_edit']">
+                    <!--                  <v-tooltip location="top">-->
+                    <!--                    <template v-slot:activator="{ props }">-->
+                    <!--                      <v-select-->
+                    <!--                        v-bind="props"-->
+                    <!--                        :items="selectMap?.get(column['key_name'])"-->
+                    <!--                        v-model="item[column['relate_table']]"-->
+                    <!--                        density="compact"-->
+                    <!--                        hide-details="auto"-->
+                    <!--                        item-title="name"-->
+                    <!--                        return-object-->
+                    <!--                      ></v-select>-->
+                    <!--                    </template>-->
+                    <!--                    <span>{{ item[column['relate_table']]['relate_column'] }}</span>-->
+                    <!--                  </v-tooltip>-->
+                  </template>
+                  <template v-else-if="item.haveFilter">
+                    <v-text-field
+                      v-model="columnFilter[column['key_name']]"
+                      density="compact"
+                      hide-details="auto"
+                      type="text"
+                      variant="solo-filled"
+                      clearable
+                    ></v-text-field>
+                  </template>
+                  <template v-else>
+                    <v-tooltip location="top">
+                      <template v-slot:activator="{ props }">
                       <span v-bind="props" class="d-block text-right">
                         {{ item[column['relate_table']]?.[column['relate_column']] }}
                       </span>
-                    </template>
-                    <span>{{ item[column['relate_table']]?.[column['relate_column']] }}</span>
-                  </v-tooltip>
+                      </template>
+                      <span>{{ item[column['relate_table']]?.[column['relate_column']] }}</span>
+                    </v-tooltip>
+                  </template>
                 </template>
-              </template>
-              <template v-else-if="column['data_type'] === DataType.INTEGER || column['data_type'] === DataType.LONG">
-                <template v-if="item.haveFilter">
-                  <v-text-field
-                    v-model="columnFilter[column['key_name']]"
-                    density="compact"
-                    hide-details="auto"
-                    type="number"
-                    variant="solo-filled"
-                    clearable
-                  ></v-text-field>
+                <template v-else-if="column['data_type'] === DataType.ENUM">
+                  <template v-if="item.haveFilter">
+                    <EnumInput
+                      :editable="true"
+                      :tooltip="false"
+                      v-model="columnFilter[column['key_name']]"
+                      :key-name="column['key_name']"
+                      :variant="'solo-filled'"
+                    />
+                  </template>
+                  <template v-else>
+                    <EnumInput
+                      :editable="column['is_edit']"
+                      :tooltip="true"
+                      v-model="item[column['key_name']]"
+                      :key-name="column['key_name']"
+                    />
+                  </template>
                 </template>
-                <template v-else>
-                  <IntegerNumberInput
-                    :editable="column['is_edit']"
-                    :tooltip="true"
-                    v-model="item[column['key_name']]"
-                  />
+                <template v-else-if="column['data_type'] === DataType.INTEGER || column['data_type'] === DataType.LONG">
+                  <template v-if="item.haveFilter">
+                    <v-text-field
+                      v-model="columnFilter[column['key_name']]"
+                      density="compact"
+                      hide-details="auto"
+                      type="number"
+                      variant="solo-filled"
+                      clearable
+                    ></v-text-field>
+                  </template>
+                  <template v-else>
+                    <IntegerNumberInput
+                      :editable="column['is_edit']"
+                      :tooltip="true"
+                      v-model="item[column['key_name']]"
+                    />
+                  </template>
                 </template>
-              </template>
-              <template v-else-if="column['data_type'] === DataType.DOUBLE">
-                <template v-if="item.haveFilter">
-                  <v-text-field
-                    v-model="columnFilter[column['key_name']]"
-                    density="compact"
-                    hide-details="auto"
-                    type="number"
-                    variant="solo-filled"
-                    clearable
-                  ></v-text-field>
+                <template v-else-if="column['data_type'] === DataType.DOUBLE">
+                  <template v-if="item.haveFilter">
+                    <v-text-field
+                      v-model="columnFilter[column['key_name']]"
+                      density="compact"
+                      hide-details="auto"
+                      type="number"
+                      variant="solo-filled"
+                      clearable
+                    ></v-text-field>
+                  </template>
+                  <template v-else>
+                    <FloatNumberInput
+                      :editable="column['is_edit']"
+                      :tooltip="true"
+                      v-model="item[column['key_name']]"
+                    />
+                  </template>
                 </template>
-                <template v-else>
-                  <FloatNumberInput
-                    :editable="column['is_edit']"
-                    :tooltip="true"
-                    v-model="item[column['key_name']]"
-                  />
-                </template>
-              </template>
-              <template v-else-if="column['data_type'] === DataType.IMAGE">
-                <template v-if="column['is_edit']">
+                <template v-else-if="column['data_type'] === DataType.IMAGE">
+                  <template v-if="column['is_edit']">
 
+                  </template>
+                  <template v-else>
+                    <v-img
+                      :src="item[column['key_name']]"
+                      width="40"
+                      height="40"
+                      rounded
+                    ></v-img>
+                  </template>
+                </template>
+                <template v-else-if="column['data_type'] === DataType.DATETIME">
+                  <!--                TODO: Datetime in table-->
+                  <!--                <template v-if="column['is_edit']">-->
+                  <!--                  <v-tooltip location="top">-->
+                  <!--                    <template v-slot:activator="{ props }">-->
+                  <!--                      <v-text-field-->
+                  <!--                        v-model="item[column['key_name']]"-->
+                  <!--                        hide-details="auto"-->
+                  <!--                        type="text"-->
+                  <!--                        v-bind="props"-->
+                  <!--                        density="compact"-->
+                  <!--                      ></v-text-field>-->
+                  <!--                    </template>-->
+                  <!--                    <span>{{ item[column['key_name']] }}</span>-->
+                  <!--                  </v-tooltip>-->
+                  <!--                </template>-->
+                  <!--                <template v-else-if="item.haveFilter">-->
+                  <!--                  <v-text-field-->
+                  <!--                    v-model="columnFilter[column['key_name']]"-->
+                  <!--                    density="compact"-->
+                  <!--                    hide-details="auto"-->
+                  <!--                    type="text"-->
+                  <!--                    variant="solo-filled"-->
+                  <!--                    clearable-->
+                  <!--                  ></v-text-field>-->
+                  <!--                </template>-->
+                  <!--                <template v-else>-->
+                  <!--                  <v-tooltip location="top">-->
+                  <!--                    <template v-slot:activator="{ props }">-->
+                  <!--                      <span v-bind="props" class="d-block text-right">-->
+                  <!--                        {{ item[column['key_name']] }}-->
+                  <!--                      </span>-->
+                  <!--                    </template>-->
+                  <!--                    <span>{{ item[column['key_name']] }}</span>-->
+                  <!--                  </v-tooltip>-->
+                  <!--                </template>-->
+                </template>
+                <template v-else-if="column['data_type'] === DataType.BOOLEAN">
+                  <!--                TODO: Boolean in table-->
+                  <!--                <template v-if="column['is_edit']">-->
+                  <!--                  <v-tooltip location="top">-->
+                  <!--                    <template v-slot:activator="{ props }">-->
+                  <!--                      <v-text-field-->
+                  <!--                        v-model="item[column['key_name']]"-->
+                  <!--                        hide-details="auto"-->
+                  <!--                        type="text"-->
+                  <!--                        v-bind="props"-->
+                  <!--                        density="compact"-->
+                  <!--                      ></v-text-field>-->
+                  <!--                    </template>-->
+                  <!--                    <span>{{ item[column['key_name']] }}</span>-->
+                  <!--                  </v-tooltip>-->
+                  <!--                </template>-->
+                  <!--                <template v-else-if="item.haveFilter">-->
+                  <!--                  <v-text-field-->
+                  <!--                    v-model="columnFilter[column['key_name']]"-->
+                  <!--                    density="compact"-->
+                  <!--                    hide-details="auto"-->
+                  <!--                    type="text"-->
+                  <!--                    variant="solo-filled"-->
+                  <!--                    clearable-->
+                  <!--                  ></v-text-field>-->
+                  <!--                </template>-->
+                  <!--                <template v-else>-->
+                  <!--                  <v-tooltip location="top">-->
+                  <!--                    <template v-slot:activator="{ props }">-->
+                  <!--                      <span v-bind="props" class="d-block text-right">-->
+                  <!--                        {{ item[column['key_name']] }}-->
+                  <!--                      </span>-->
+                  <!--                    </template>-->
+                  <!--                    <span>{{ item[column['key_name']] }}</span>-->
+                  <!--                  </v-tooltip>-->
+                  <!--                </template>-->
                 </template>
                 <template v-else>
-                  <v-img
-                    :src="item[column['key_name']]"
-                    width="40"
-                    height="40"
-                    rounded
-                  ></v-img>
+                  <template v-if="item.haveFilter">
+                    <v-text-field
+                      v-model="columnFilter[column['key_name']]"
+                      density="compact"
+                      hide-details="auto"
+                      type="text"
+                      variant="solo-filled"
+                      clearable
+                    ></v-text-field>
+                  </template>
+                  <template v-else>
+                    <TextInput
+                      :editable="column['is_edit']"
+                      :tooltip="true"
+                      v-model="item[column['key_name']]"
+                    />
+                  </template>
                 </template>
-              </template>
-              <template v-else-if="column['data_type'] === DataType.DATETIME">
-<!--                TODO: Datetime in table-->
-<!--                <template v-if="column['is_edit']">-->
-<!--                  <v-tooltip location="top">-->
-<!--                    <template v-slot:activator="{ props }">-->
-<!--                      <v-text-field-->
-<!--                        v-model="item[column['key_name']]"-->
-<!--                        hide-details="auto"-->
-<!--                        type="text"-->
-<!--                        v-bind="props"-->
-<!--                        density="compact"-->
-<!--                      ></v-text-field>-->
-<!--                    </template>-->
-<!--                    <span>{{ item[column['key_name']] }}</span>-->
-<!--                  </v-tooltip>-->
-<!--                </template>-->
-<!--                <template v-else-if="item.haveFilter">-->
-<!--                  <v-text-field-->
-<!--                    v-model="columnFilter[column['key_name']]"-->
-<!--                    density="compact"-->
-<!--                    hide-details="auto"-->
-<!--                    type="text"-->
-<!--                    variant="solo-filled"-->
-<!--                    clearable-->
-<!--                  ></v-text-field>-->
-<!--                </template>-->
-<!--                <template v-else>-->
-<!--                  <v-tooltip location="top">-->
-<!--                    <template v-slot:activator="{ props }">-->
-<!--                      <span v-bind="props" class="d-block text-right">-->
-<!--                        {{ item[column['key_name']] }}-->
-<!--                      </span>-->
-<!--                    </template>-->
-<!--                    <span>{{ item[column['key_name']] }}</span>-->
-<!--                  </v-tooltip>-->
-<!--                </template>-->
-              </template>
-              <template v-else-if="column['data_type'] === DataType.BOOLEAN">
-                <!--                TODO: Boolean in table-->
-                <!--                <template v-if="column['is_edit']">-->
-                <!--                  <v-tooltip location="top">-->
-                <!--                    <template v-slot:activator="{ props }">-->
-                <!--                      <v-text-field-->
-                <!--                        v-model="item[column['key_name']]"-->
-                <!--                        hide-details="auto"-->
-                <!--                        type="text"-->
-                <!--                        v-bind="props"-->
-                <!--                        density="compact"-->
-                <!--                      ></v-text-field>-->
-                <!--                    </template>-->
-                <!--                    <span>{{ item[column['key_name']] }}</span>-->
-                <!--                  </v-tooltip>-->
-                <!--                </template>-->
-                <!--                <template v-else-if="item.haveFilter">-->
-                <!--                  <v-text-field-->
-                <!--                    v-model="columnFilter[column['key_name']]"-->
-                <!--                    density="compact"-->
-                <!--                    hide-details="auto"-->
-                <!--                    type="text"-->
-                <!--                    variant="solo-filled"-->
-                <!--                    clearable-->
-                <!--                  ></v-text-field>-->
-                <!--                </template>-->
-                <!--                <template v-else>-->
-                <!--                  <v-tooltip location="top">-->
-                <!--                    <template v-slot:activator="{ props }">-->
-                <!--                      <span v-bind="props" class="d-block text-right">-->
-                <!--                        {{ item[column['key_name']] }}-->
-                <!--                      </span>-->
-                <!--                    </template>-->
-                <!--                    <span>{{ item[column['key_name']] }}</span>-->
-                <!--                  </v-tooltip>-->
-                <!--                </template>-->
-              </template>
-              <template v-else>
-                <template v-if="item.haveFilter">
-                  <v-text-field
-                    v-model="columnFilter[column['key_name']]"
-                    density="compact"
-                    hide-details="auto"
-                    type="text"
-                    variant="solo-filled"
-                    clearable
-                  ></v-text-field>
-                </template>
-                <template v-else>
-                  <TextInput
-                    :editable="column['is_edit']"
-                    :tooltip="true"
-                    v-model="item[column['key_name']]"
-                  />
-                </template>
-              </template>
-            </td>
+              </td>
 
+            </template>
+            <template v-else>
+              <td :style="{ ...columnStyle(column, false, item)}" class="text-center">
+                <template v-if="!item.haveFilter" v-for="action in rowActions" :key="action.label">
+                  <v-btn density="comfortable" @click="action.action(item)" rounded class="mx-1">
+                    <v-icon :icon="'mdi-' + action.icon"></v-icon>
+                    {{ action.label }}
+                  </v-btn>
+                </template>
+              </td>
+            </template>
           </template>
-          <template v-else>
-            <td :style="{ ...columnStyle(column, false, item)}" class="text-center">
-              <template v-if="!item.haveFilter" v-for="action in rowActions" :key="action.label">
-                <v-btn density="comfortable" @click="action.action(item)" rounded class="mx-1">
-                  <v-icon :icon="'mdi-' + action.icon"></v-icon>
-                  {{ action.label }}
-                </v-btn>
-              </template>
-            </td>
-          </template>
-        </template>
-      </tr>
+        </tr>
+      </template>
+      <v-overlay :model-value="modelLoading" class="align-center justify-center" contained>
+        <v-progress-circular color="primary" size="64" indeterminate></v-progress-circular>
+      </v-overlay>
     </template>
   </v-data-table-server>
 </template>
@@ -495,4 +524,6 @@ const activeColor = '#d1dfe3'
   min-width: 0 !important
   padding: 0 8px !important
 
+.v-data-table__tbody
+  position: relative
 </style>

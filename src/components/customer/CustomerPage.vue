@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ExcelService} from '@/services/ExcelService'
-import {ProductService} from '@/services/ProductService'
+import {CustomerService} from "@/services/CustomerService";
 import {ViewService} from '@/services/ViewService'
 import {useToastStore} from '@/stores/toast'
 import {useLoadingStore} from '@/stores/loading';
@@ -29,7 +29,7 @@ const tableActions = ref<any[]>([
   {
     icon: 'export',
     label: 'Export',
-    action: () => exportProduct(),
+    action: () => exportData(),
   },
   {
     icon: 'plus-circle-outline',
@@ -45,8 +45,8 @@ const tableActions = ref<any[]>([
 const headers = ref<any[]>([])
 const items = ref<any[]>([])
 const selected = ref<any[]>([])
-const viewName = 'product_list'
-const formViewName = 'product_form_popup'
+const viewName = 'customer_list'
+const formViewName = 'customer_form_popup'
 const loading = ref<boolean>(false)
 const filter = ref<any>({
   pageNumber: 1,
@@ -56,7 +56,7 @@ const filter = ref<any>({
 })
 const totalData = ref<number>(0)
 const forms = ref<any[]>([])
-const product = ref<any>({})
+const record = ref<any>({})
 const selectMap = ref<Map<string, any[]>>(new Map())
 
 onMounted(() => {
@@ -65,7 +65,7 @@ onMounted(() => {
     .then((res: any) => {
       headers.value = res.data.data[viewName]
       forms.value = res.data.data[formViewName]
-      return ProductService.searchProduct(viewName, {
+      return CustomerService.search(viewName, {
         ...filter.value,
         pageNumber: 0,
       })
@@ -82,7 +82,7 @@ onMounted(() => {
 
 const getProductList = debounce(() => {
   loading.value = true
-  ProductService.searchProduct(viewName, {
+  CustomerService.search(viewName, {
     ...filter.value,
     pageNumber: filter.value.pageNumber - 1,
   })
@@ -101,11 +101,11 @@ const openDeletePopup = (item: any) => {
   deleteItem.value = item
   deletePopup.value = true
 }
-const deleteProduct = () => {
-  ProductService.deleteProduct(deleteItem.value.id)
+const deleteRecord = () => {
+  CustomerService.delete(deleteItem.value.id)
     .then(() => {
       getProductList()
-      useToastStore().showSuccess('Xóa sản phẩm thành công')
+      useToastStore().showSuccess('Xóa khách hàng thành công')
       deletePopup.value = false
     })
 }
@@ -113,20 +113,20 @@ const deleteProduct = () => {
 const deleteMultiPopup = ref<boolean>(false)
 const openDeleteMultiPopup = () => {
   if (selected.value.length === 0) {
-    useToastStore().showWarning('Chưa chọn sản phẩm để xóa')
+    useToastStore().showWarning('Chưa chọn khách hàng để xóa')
     return
   }
   deleteMultiPopup.value = true
 }
-const deleteMultiProduct = () => {
+const deleteMulti = () => {
   if (selected.value.length === 0) {
-    useToastStore().showWarning('Chưa chọn sản phẩm để xóa')
+    useToastStore().showWarning('Chưa chọn khách hàng để xóa')
     return
   }
-  ProductService.deleteMultiProduct(selected.value)
+  CustomerService.deleteMulti(selected.value)
     .then(() => {
       getProductList()
-      useToastStore().showSuccess('Xóa sản phẩm thành công')
+      useToastStore().showSuccess('Xóa khách hàng thành công')
       deleteMultiPopup.value = false
     })
     .finally(() => {
@@ -134,19 +134,19 @@ const deleteMultiProduct = () => {
     })
 }
 
-const productPopup = ref<boolean>(false)
+const recordPopup = ref<boolean>(false)
 const openAddPopup = () => {
-  productPopup.value = true
+  recordPopup.value = true
 }
 const openEditPopup = (item: any) => {
-  ProductService.getProduct(item.id)
+  CustomerService.get(item.id)
     .then((res: any) => {
-      product.value = res.data.data
-      productPopup.value = true
+      record.value = res.data.data
+      recordPopup.value = true
     })
 }
 
-const exportProduct = () => {
+const exportData = () => {
   useLoadingStore().showLoading()
   ExcelService.exportExcel(viewName)
     .then((res) => {
@@ -179,31 +179,31 @@ const changeSelectMap = debounce((form: any, common: string = '') => {
   }
 }, 400)
 
-const saveProduct = () => {
-  productPopup.value = false
-  ProductService.saveProduct(product.value)
+const saveRecord = () => {
+  recordPopup.value = false
+  CustomerService.save(record.value)
     .then(() => {
       getProductList()
-      useToastStore().showSuccess('Lưu sản phẩm thành công')
+      useToastStore().showSuccess('Lưu khách hàng thành công')
     })
 }
-const saveAndNewProduct = () => {
-  ProductService.saveProduct(product.value)
+const saveAndNewRecord = () => {
+  CustomerService.save(record.value)
     .then(() => {
       getProductList()
-      product.value = {}
-      useToastStore().showSuccess('Lưu sản phẩm thành công')
+      record.value = {}
+      useToastStore().showSuccess('Lưu khách hàng thành công')
     })
 }
-const saveAndCopyProduct = () => {
-  ProductService.saveProduct(product.value)
+const saveAndCopyRecord = () => {
+  CustomerService.save(record.value)
     .then(() => {
       getProductList()
-      product.value = {
-        ...product.value,
+      record.value = {
+        ...record.value,
         id: null,
       }
-      useToastStore().showSuccess('Lưu sản phẩm thành công')
+      useToastStore().showSuccess('Lưu khách hàng thành công')
     })
 
 }
@@ -257,10 +257,7 @@ watch(
 
 <template>
   <v-row style="width: 100%;height: calc(100vh - 48px);padding: 8px">
-    <v-col cols="2">
-
-    </v-col>
-    <v-col cols="10">
+    <v-col cols="12">
       <Table
         :height="800"
         :columns="headers"
@@ -280,17 +277,17 @@ watch(
     </v-col>
   </v-row>
   <v-dialog
-    v-model="productPopup"
+    v-model="recordPopup"
     width="auto"
-    @after-leave="product = {}"
+    @after-leave="record = {}"
   >
     <v-card
       width="1000"
-      title="Thông tin sản phẩm"
+      title="Thông tin khách hàng"
     >
       <v-card-text>
         <Form
-          v-model:item="product"
+          v-model:item="record"
           :forms="forms"
           :line-each-item="2"
           :column-number="2"
@@ -301,30 +298,30 @@ watch(
       </v-card-text>
 
       <v-card-actions>
-        <v-btn color="primary" @click="productPopup = false" variant="text">Hủy</v-btn>
-        <v-btn color="primary" @click="saveProduct" variant="elevated">Lưu</v-btn>
-        <v-btn color="primary" @click="saveAndNewProduct" variant="elevated">Lưu và thêm mới</v-btn>
-        <v-btn color="primary" @click="saveAndCopyProduct" variant="elevated">Lưu và sao chép</v-btn>
+        <v-btn color="primary" @click="recordPopup = false" variant="text">Hủy</v-btn>
+        <v-btn color="primary" @click="saveRecord" variant="elevated">Lưu</v-btn>
+        <v-btn color="primary" @click="saveAndNewRecord" variant="elevated">Lưu và thêm mới</v-btn>
+        <v-btn color="primary" @click="saveAndCopyRecord" variant="elevated">Lưu và sao chép</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
   <ConfirmPopup
     v-model:visible="deletePopup"
     title="Xác nhận"
-    content="Bạn có chắc chắn muốn xóa sản phẩm này không?"
+    content="Bạn có chắc chắn muốn xóa khách hàng này không?"
     type="error"
-    @submit="deleteProduct"
+    @submit="deleteRecord"
   />
   <ConfirmPopup
     v-model:visible="deleteMultiPopup"
     title="Xác nhận"
-    content="Bạn có chắc chắn muốn xóa những sản phẩm đã chọn không?"
+    content="Bạn có chắc chắn muốn xóa những khách hàng này không?"
     type="error"
-    @submit="deleteMultiProduct"
+    @submit="deleteMulti"
   />
   <ImportExcelPopup
     v-model:visible="importPopup"
-    title="Import sản phẩm"
+    title="Import khách hàng"
     @import="importExcel"
     @get="getExcelTemplate"
   ></ImportExcelPopup>

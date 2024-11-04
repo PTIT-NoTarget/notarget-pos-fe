@@ -1,25 +1,42 @@
 <script setup lang="ts">
+import {Enum} from "@/utils/Enum";
+import {debounce} from "lodash";
+import {DataType} from "@/utils/Constant";
+import {CustomService} from "@/services/CustomService";
+
 const props = withDefaults(defineProps<{
   info: any
+  forms: any
 }>(), {})
+const emit = defineEmits();
+const formViewName: string[] = ['sell_order_info', 'sell_order_calc','sell_order_payment']
+const selectMap = ref<Map<string, any[]>>(new Map())
 
-const paymentMethods: any[] = [
-  {
-    id: 'tienmat',
-    label: 'Tiền mặt',
-    isDefault: true,
-  },
-  {
-    id: 'chuyenkhoan',
-    label: 'Chuyển khoản',
-  },
-]
+const modelInfo = computed({
+  get: () => props.info,
+  set: (newValue) => {
+    emit('update:info', newValue)
+  }
+})
 
 onUpdated(() => {
   if (!props.info['payment']) {
-    props.info['payment'] = paymentMethods.find((item) => item.isDefault)
+    props.info['payment'] = Enum['payment'].CASH.value
   }
 })
+
+onMounted(() =>{
+  console.log(props.forms)
+})
+
+const changeSelectMap = debounce((form: any, common: string = '') => {
+  if (form['data_type'] === DataType.RELATION) {
+    CustomService.getAutoComplete(form['relate_table'], form['relate_column'], common)
+      .then((res) => {
+        selectMap.value.set(form['relate_table'], res.data.data)
+      })
+  }
+}, 400)
 
 </script>
 
@@ -27,18 +44,35 @@ onUpdated(() => {
   <div style="height:100%; display: flex; flex-direction: column; justify-content: space-between; padding-top: 12px">
     <div>
       <div class="text-h4 text-center mb-3">Thông tin đơn hàng</div>
-      <SellInfoSelect title="Khách hàng :" v-model="info['customer']" :list="[{id: -1}]" label="customer_name"/>
-      <SellInfoSelect title="Nhân viên :" v-model="info['employee']" :list="[{id: -1}]" label="employee_name"/>
+      <Form
+        v-model:item="modelInfo"
+        :forms="forms[formViewName[0]]"
+        :line-each-item="1"
+        :column-number="1"
+        :tooltip="false"
+        :select-map="selectMap"
+        @update:change-select-map="changeSelectMap"
+      />
       <v-divider class="my-3"></v-divider>
       <div class="text-h4 text-center mb-3">Tính tiền</div>
-      <SellInfoInput title="Tổng tiền :" v-model="info['total']"/>
-      <SellInfoInput title="Chiết khấu :" v-model="info['discount']" :editable="true"/>
-      <SellInfoInput title="Thành tiền :" v-model="info['final']"/>
+      <Form
+        v-model:item="modelInfo"
+        :forms="forms[formViewName[1]]"
+        :line-each-item="1"
+        :column-number="1"
+        :tooltip="false"
+      />
       <v-divider class="my-3"></v-divider>
-      <SellInfoSelect title="Hình thức chuyển khoản :" v-model="info['payment']" :list="paymentMethods"/>
-      <template v-if="info['payment'] && info['payment'].id === 'chuyenkhoan'">
+      <Form
+        v-model:item="modelInfo"
+        :forms="forms[formViewName[2]]"
+        :line-each-item="1"
+        :column-number="1"
+        :tooltip="false"
+      />
+      <template v-if="modelInfo['payment'] && modelInfo['payment'].id === 'TRANSFER'">
         <v-img
-          :src="`https://img.vietqr.io/image/mbbank-3806062003-qr_only.jpg?amount=${info['final']}&addInfo=Ngo%20Dang%20Han&accountName=NGO%20DANG%20HAN`"
+          :src="`https://img.vietqr.io/image/mbbank-3806062003-qr_only.jpg?amount=${modelInfo['final']}&addInfo=Ngo%20Dang%20Han&accountName=NGO%20DANG%20HAN`"
           width="200"
           height="200"
           class="mx-auto mt-3"

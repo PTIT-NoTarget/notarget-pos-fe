@@ -1,25 +1,35 @@
 <script setup lang="ts">
-import {computed, toRefs} from 'vue'
+import {computed} from 'vue'
+import {Enum} from "@/utils/Enum";
 
 const props = withDefaults(defineProps<{
   editable?: boolean
   modelValue: any
   tooltip?: boolean
-  isArea?: boolean
+  keyName?: keyof typeof Enum
+  variant?: any
 }>(), {
   editable: false,
   tooltip: true,
-  isArea: false
+  variant: 'filled'
 })
 const emit = defineEmits(['update:modelValue'])
 
-const {editable, tooltip, modelValue} = toRefs(props)
 const value = computed({
-  get: () => modelValue.value,
+  get: () => props.modelValue,
   set: (newValue) => {
     emit('update:modelValue', newValue)
   }
 })
+
+const items = computed(() => {
+  return props.keyName ? Object.values(Enum[props.keyName]) : [];
+});
+
+const getLabel = (value: string) => {
+  return props.keyName ? Enum[props.keyName][value].label : value;
+}
+
 </script>
 
 <template>
@@ -27,41 +37,32 @@ const value = computed({
     <template v-if="tooltip">
       <v-tooltip location="top">
         <template v-slot:activator="{ props: slotProps }">
-          <v-text-field
-            v-model="value"
-            hide-details="auto"
-            type="text"
+          <v-autocomplete
             v-bind="slotProps"
             density="compact"
-            v-if="!isArea"
-          ></v-text-field>
-          <v-textarea
-            v-model="value"
             hide-details="auto"
-            v-bind="slotProps"
-            density="compact"
-            single-line
-            v-else
-          ></v-textarea>
+            v-model="value"
+            :items="items"
+            item-value="value"
+            item-title="label"
+            hide-no-data
+            :variant="variant"
+          ></v-autocomplete>
         </template>
-        <span>{{ value }}</span>
+        <span> {{ getLabel(value) }} </span>
       </v-tooltip>
     </template>
     <template v-else>
-      <v-text-field
-        v-model="value"
-        hide-details="auto"
-        type="text"
+      <v-autocomplete
         density="compact"
-        v-if="!isArea"
-      ></v-text-field>
-      <v-textarea
-        v-model="value"
         hide-details="auto"
-        density="compact"
-        single-line
-        v-else
-      ></v-textarea>
+        v-model="value"
+        :items="items"
+        item-value="value"
+        item-title="label"
+        hide-no-data
+        :variant="variant"
+      ></v-autocomplete>
     </template>
   </template>
   <template v-else>
@@ -69,15 +70,15 @@ const value = computed({
       <v-tooltip location="top">
         <template v-slot:activator="{ props: slotProps }">
           <span v-bind="slotProps" class="d-block text-right">
-            {{ value }}
+            {{ getLabel(value) }}
           </span>
         </template>
-        <span>{{ value }}</span>
+        <span>{{ getLabel(value) }}</span>
       </v-tooltip>
     </template>
     <template v-else>
       <span class="d-block text-right">
-        {{ value }}
+        {{ getLabel(value) }}
       </span>
     </template>
   </template>

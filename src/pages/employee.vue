@@ -8,7 +8,7 @@ definePage({
 </script>
 
 <template>
-
+  <EmployeePage />
 </template>
 
 <style scoped lang="sass">

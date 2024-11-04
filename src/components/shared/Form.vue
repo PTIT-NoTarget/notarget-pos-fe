@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ImageService } from '@/services/ImageService'
-import { useToastStore } from '@/stores/toast'
-import { DataType } from '@/utils/Constant'
+import {ImageService} from '@/services/ImageService'
+import {useToastStore} from '@/stores/toast'
+import {DataType} from '@/utils/Constant'
 
 const props = withDefaults(defineProps<{
   item: any;
@@ -15,6 +15,8 @@ const props = withDefaults(defineProps<{
   columnNumber: 1,
   tooltip: true,
 })
+const emit = defineEmits()
+
 const imageRules = ref<any[]>([])
 
 const handleFileUpload = (form: any, event: any) => {
@@ -28,6 +30,13 @@ const handleFileUpload = (form: any, event: any) => {
       props.item[form['key_name']] = res.data.data
       useToastStore().showSuccess('Upload ảnh thành công')
     })
+}
+
+const searchQuery = ref<Map<string, string>>(new Map())
+
+const handleChangeSelectMap = (form: any, value: string = '') => {
+  searchQuery.value.set(form['relate_table'], value)
+  emit('update:change-select-map', form, value)
 }
 
 </script>
@@ -60,9 +69,34 @@ const handleFileUpload = (form: any, event: any) => {
                 return-object
                 hide-no-data
                 no-filter
-                @update:search="console.log($event)"
-                @click="console.log($event)"
+                :search="searchQuery.get(form['relate_table'])"
+                @update:search="handleChangeSelectMap(form, $event)"
               ></v-autocomplete>
+            </v-col>
+          </v-row>
+        </v-col>
+      </template>
+      <template v-else-if="form['data_type'] === DataType.ENUM">
+        <v-col
+          :cols="12 / columnNumber"
+          class="flex align-content-center"
+        >
+          <v-row>
+            <v-col cols="4" class="flex align-content-center" v-if="lineEachItem === 1">
+              <span>
+                {{ form['key_title'] }}
+              </span>
+            </v-col>
+            <v-col cols="lineEachItem === 1 ? 8 : 12">
+              <span v-if="lineEachItem !== 1">
+                {{ form['key_title'] }}
+              </span>
+              <EnumInput
+                :editable="form['is_edit']"
+                :tooltip="tooltip"
+                v-model="item[form['key_name']]"
+                :key-name="form['key_name']"
+              />
             </v-col>
           </v-row>
         </v-col>
@@ -72,23 +106,14 @@ const handleFileUpload = (form: any, event: any) => {
           :cols="12 / columnNumber"
           class="flex align-content-center"
         >
-          <v-row v-if="lineEachItem === 1">
-            <v-col cols="4" class="flex align-content-center">
+          <v-row>
+            <v-col cols="4" class="flex align-content-center" v-if="lineEachItem === 1">
               <span>
                 {{ form['key_title'] }}
               </span>
             </v-col>
-            <v-col cols="8">
-              <IntegerNumberInput
-                :editable="form['is_edit']"
-                :tooltip="tooltip"
-                v-model="item[form['key_name']]"
-              />
-            </v-col>
-          </v-row>
-          <v-row v-else>
-            <v-col cols="12">
-              <span>
+            <v-col cols="lineEachItem === 1 ? 8 : 12">
+              <span v-if="lineEachItem !== 1">
                 {{ form['key_title'] }}
               </span>
               <IntegerNumberInput
@@ -105,23 +130,14 @@ const handleFileUpload = (form: any, event: any) => {
           :cols="12 / columnNumber"
           class="flex align-content-center"
         >
-          <v-row v-if="lineEachItem === 1">
-            <v-col cols="4" class="flex align-content-center">
+          <v-row>
+            <v-col cols="4" class="flex align-content-center" v-if="lineEachItem === 1">
               <span>
                 {{ form['key_title'] }}
               </span>
             </v-col>
-            <v-col cols="8">
-              <FloatNumberInput
-                :editable="form['is_edit']"
-                :tooltip="tooltip"
-                v-model="item[form['key_name']]"
-              />
-            </v-col>
-          </v-row>
-          <v-row v-else>
-            <v-col cols="12">
-              <span>
+            <v-col cols="lineEachItem === 1 ? 8 : 12">
+              <span v-if="lineEachItem !== 1">
                 {{ form['key_title'] }}
               </span>
               <FloatNumberInput
@@ -134,44 +150,26 @@ const handleFileUpload = (form: any, event: any) => {
         </v-col>
       </template>
       <template v-else-if="form['data_type'] === DataType.IMAGE">
-
         <v-col
           :cols="12 / columnNumber"
           class="flex align-content-center"
         >
-          <v-row v-if="lineEachItem === 1">
-            <v-col cols="4" class="flex align-content-center">
+          <v-row>
+            <v-col cols="4" class="flex align-content-center" v-if="lineEachItem === 1">
               <span>
                 {{ form['key_title'] }}
               </span>
             </v-col>
-            <v-col cols="8">
+            <v-col cols="lineEachItem === 1 ? 8 : 12">
+              <span v-if="lineEachItem !== 1">
+                {{ form['key_title'] }}
+              </span>
               <v-file-input
                 :rules="imageRules"
                 accept="image/png, image/jpeg, image/bmp"
                 @change="handleFileUpload"
                 hide-details="auto"
-              >
-                <template v-slot:prepend>
-                  <v-avatar size="40">
-                    <v-img :src="item[form['key_name']]"/>
-                  </v-avatar>
-                </template>
-              </v-file-input>
-            </v-col>
-          </v-row>
-          <v-row v-else>
-            <v-col cols="12">
-              <span>
-                {{ form['key_title'] }}
-              </span>
-              <v-file-input
-                :rules="imageRules"
-                accept="image/png, image/jpeg, image/bmp"
-                @change="handleFileUpload(form, $event)"
-                prepend-icon=""
-                :title="item[form['key_name']]"
-                hide-details="auto"
+                density="compact"
               >
                 <template v-slot:prepend>
                   <v-avatar size="40">
@@ -194,24 +192,14 @@ const handleFileUpload = (form: any, event: any) => {
           :cols="12"
           class="flex align-content-center"
         >
-          <v-row v-if="lineEachItem === 1">
-            <v-col cols="4" class="flex align-content-center">
+          <v-row>
+            <v-col cols="4" class="flex align-content-center" v-if="lineEachItem === 1">
               <span>
                 {{ form['key_title'] }}
               </span>
             </v-col>
-            <v-col cols="8">
-              <TextInput
-                :editable="form['is_edit']"
-                :tooltip="tooltip"
-                v-model="item[form['key_name']]"
-                :is-area="true"
-              />
-            </v-col>
-          </v-row>
-          <v-row v-else>
-            <v-col cols="12">
-              <span>
+            <v-col cols="lineEachItem === 1 ? 8 : 12">
+              <span v-if="lineEachItem !== 1">
                 {{ form['key_title'] }}
               </span>
               <TextInput
@@ -229,23 +217,14 @@ const handleFileUpload = (form: any, event: any) => {
           :cols="12 / columnNumber"
           class="flex align-content-center"
         >
-          <v-row v-if="lineEachItem === 1">
-            <v-col cols="4" class="flex align-content-center">
+          <v-row>
+            <v-col cols="4" class="flex align-content-center" v-if="lineEachItem === 1">
               <span>
                 {{ form['key_title'] }}
               </span>
             </v-col>
-            <v-col cols="8">
-              <TextInput
-                :editable="form['is_edit']"
-                :tooltip="tooltip"
-                v-model="item[form['key_name']]"
-              />
-            </v-col>
-          </v-row>
-          <v-row v-else>
-            <v-col cols="12">
-              <span>
+            <v-col cols="lineEachItem === 1 ? 8 : 12">
+              <span v-if="lineEachItem !== 1">
                 {{ form['key_title'] }}
               </span>
               <TextInput

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { viewService } from '@/services/ViewService'
+import {ViewService} from '@/services/ViewService'
 
 const headers = ref<any[]>([])
 const itemsMap = ref<Map<number, any[]>>(new Map())
@@ -13,7 +13,9 @@ const rowActions = ref<any[]>([
 ])
 const activeTab = ref<number>(-1)
 const tabs = ref<any[]>([])
-const viewName = 'product_list_sell'
+const viewName: string = 'product_list_sell'
+const formViewName: string[] = ['sell_order_calc', 'sell_order_info', 'sell_order_payment']
+const forms = ref<any>({})
 
 onMounted(() => {
   tabs.value = JSON.parse(localStorage.getItem('tabs') || '[]')
@@ -23,9 +25,13 @@ onMounted(() => {
   if (tabs.value.length === 0) {
     addNewTab()
   }
-  viewService.getViewByViewName(viewName)
+  ViewService.getViewByMultiViewName([viewName, ...formViewName])
     .then((res: any) => {
-      headers.value = res.data.data
+      headers.value = res.data.data[viewName];
+      forms.value = formViewName.reduce((acc: any, name: string) => {
+        acc[name] = res.data.data[name] || {};
+        return acc;
+      }, {});
     })
 })
 
@@ -139,6 +145,7 @@ const removeTab = (id: number) => {
   }
 }
 
+const currentInfo = computed(() => infoMap.value.get(activeTab.value) || {});
 </script>
 
 <template>
@@ -206,7 +213,8 @@ const removeTab = (id: number) => {
       </v-col>
       <v-col cols="4" style="height: 100%">
         <SellInfo
-          :info="infoMap.get(activeTab)"
+          v-model:info="currentInfo"
+          :forms="forms"
         />
       </v-col>
     </template>
