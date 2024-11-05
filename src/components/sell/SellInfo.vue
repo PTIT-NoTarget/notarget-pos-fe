@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<{
   forms: any
 }>(), {})
 const emit = defineEmits();
-const formViewName: string[] = ['sell_order_info', 'sell_order_calc','sell_order_payment']
+const formViewName: string[] = ['sell_order_info', 'sell_order_calc', 'sell_order_payment']
 const selectMap = ref<Map<string, any[]>>(new Map())
 
 const modelInfo = computed({
@@ -25,10 +25,6 @@ onUpdated(() => {
   }
 })
 
-onMounted(() =>{
-  console.log(props.forms)
-})
-
 const changeSelectMap = debounce((form: any, common: string = '') => {
   if (form['data_type'] === DataType.RELATION) {
     CustomService.getAutoComplete(form['relate_table'], form['relate_column'], common)
@@ -37,6 +33,10 @@ const changeSelectMap = debounce((form: any, common: string = '') => {
       })
   }
 }, 400)
+
+const qrCodeUrl = computed(() => {
+  return `https://img.vietqr.io/image/mbbank-3806062003-qr_only.jpg?amount=${modelInfo.value['final_total']}&addInfo=${modelInfo.value['payment_id']}&accountName=QUAN%20CO%20VAN%20SUU`;
+});
 
 </script>
 
@@ -70,9 +70,9 @@ const changeSelectMap = debounce((form: any, common: string = '') => {
         :column-number="1"
         :tooltip="false"
       />
-      <template v-if="modelInfo['payment'] && modelInfo['payment'].id === 'TRANSFER'">
+      <template v-if="modelInfo['payment'] && modelInfo['payment'] === Enum['payment']['TRANSFER'].value">
         <v-img
-          :src="`https://img.vietqr.io/image/mbbank-3806062003-qr_only.jpg?amount=${modelInfo['final']}&addInfo=Ngo%20Dang%20Han&accountName=NGO%20DANG%20HAN`"
+          :src="qrCodeUrl"
           width="200"
           height="200"
           class="mx-auto mt-3"

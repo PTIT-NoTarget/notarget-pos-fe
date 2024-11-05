@@ -1,5 +1,8 @@
 <script lang="ts" setup>
 import {ViewService} from '@/services/ViewService'
+import {RandomUtils} from "@/utils/RandomUtils";
+import SockJS from 'sockjs-client';
+import Stomp from 'stompjs';
 
 const headers = ref<any[]>([])
 const itemsMap = ref<Map<number, any[]>>(new Map())
@@ -15,9 +18,10 @@ const activeTab = ref<number>(-1)
 const tabs = ref<any[]>([])
 const viewName: string = 'product_list_sell'
 const formViewName: string[] = ['sell_order_calc', 'sell_order_info', 'sell_order_payment']
-const forms = ref<any>({})
+const forms = ref<any>(undefined)
 
 onMounted(() => {
+  connectPaymentSocket()
   tabs.value = JSON.parse(localStorage.getItem('tabs') || '[]')
   itemsMap.value = new Map(JSON.parse(localStorage.getItem('itemsMap') || '[]'))
   infoMap.value = new Map(JSON.parse(localStorage.getItem('infoMap') || '[]'))
@@ -34,6 +38,35 @@ onMounted(() => {
       }, {});
     })
 })
+
+const connectPaymentSocket = () => {
+  const wsUri = 'ws://localhost:8000/ws';
+
+  console.log(wsUri);
+
+  const xsrf = this.getCookie("XSRF-TOKEN");
+  const connectionOption = {
+    brokerURL: wsUri,
+    connectHeaders: {
+      "X-XSRF-TOKEN": xsrf
+    },
+    debug: function (str) {
+      console.log(str);
+    },
+    reconnectDelay: 10000,
+    heartbeatIncoming: 4000,
+    heartbeatOutgoing: 4000,
+  };
+  this.stompClient = new Stomp.Client(connectionOption);
+  stompClient.connect({}, () => {
+    stompClient.subscribe('/payment/button', (message) => {
+      const data = JSON.parse(message.body);
+      console.log('Received data: ', data);
+    });
+  }, (error) => {
+    console.error('WebSocket error: ', error);
+  });
+}
 
 watch(
   activeTab,
@@ -77,7 +110,7 @@ watch(
 watch(
   infoMap,
   (newVal: Map<number, any>) => {
-    newVal.get(activeTab.value).final = newVal.get(activeTab.value).total - newVal.get(activeTab.value).discount
+    newVal.get(activeTab.value).final_total = newVal.get(activeTab.value).total - newVal.get(activeTab.value).discount
     localStorage.setItem('infoMap', JSON.stringify(Array.from(newVal.entries())))
   },
   {
@@ -116,7 +149,6 @@ const addNewTab = () => {
       maxId = tab.id
     }
   })
-
   tabs.value.push({
     id: maxId + 1,
     name: 'Hoá đơn ' + (maxId + 1),
@@ -127,6 +159,7 @@ const addNewTab = () => {
     total: 0,
     discount: 0,
     final: 0,
+    payment_id: RandomUtils.generateRandomStringAttachTimestamp()
   })
 }
 
@@ -149,76 +182,77 @@ const currentInfo = computed(() => infoMap.value.get(activeTab.value) || {});
 </script>
 
 <template>
-  <v-row>
-    <v-col cols="3">
-      <SellSearchInput @add="addNewRow"/>
-    </v-col>
-    <v-col cols="9" style="display:flex; justify-content: space-between;align-items: center">
-      <v-tabs
-        bg-color="white"
-        center-active
-        hide-slider
-      >
-        <v-tab
-          v-for="tab in tabs"
-          :key="tab.id"
-          @click="activeTab = tab.id"
-          :active="activeTab === tab.id"
-        >
-          <template v-slot:append>
-            <v-icon @click.stop="removeTab(tab.id)" size="25px">mdi-close</v-icon>
-          </template>
-          {{ tab.name }}
-        </v-tab>
-        <v-tab @click="addNewTab">
-          <v-icon>mdi-plus</v-icon>
-        </v-tab>
-      </v-tabs>
-      <v-menu
-        rounded
-        open-on-hover
-      >
-        <template v-slot:activator="{ props }">
-          <v-btn icon v-bind="props" style="margin-right: 12px">
-            <v-icon>mdi-dots-vertical</v-icon>
-          </v-btn>
-        </template>
-        <v-card>
-          <v-card-text>
-            <div class="mx-auto text-center">
-              <v-btn variant="text" rounded :to="'/'">
-                Trang chủ
-              </v-btn>
-              <v-divider class="my-3"></v-divider>
-              <v-btn variant="text" rounded>
-                Đăng xuất
-              </v-btn>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-menu>
-    </v-col>
-  </v-row>
-  <v-divider thickness="4"></v-divider>
-  <v-row style="height: calc(100% - 72px)">
-    <template v-if="activeTab !== -1">
-      <v-col cols="8" style="height: 100%">
-        <Table
-          :columns="headers"
-          :items="itemsMap.get(activeTab)"
-          :row-actions="rowActions"
-          :highlight-row="false"
-          :have-pagination="false"
-        />
-      </v-col>
-      <v-col cols="4" style="height: 100%">
-        <SellInfo
-          v-model:info="currentInfo"
-          :forms="forms"
-        />
-      </v-col>
-    </template>
-  </v-row>
+<!--  <v-row>-->
+<!--    <v-col cols="3">-->
+<!--      <SellSearchInput @add="addNewRow"/>-->
+<!--    </v-col>-->
+<!--    <v-col cols="9" style="display:flex; justify-content: space-between;align-items: center">-->
+<!--      <v-tabs-->
+<!--        bg-color="white"-->
+<!--        center-active-->
+<!--        hide-slider-->
+<!--      >-->
+<!--        <v-tab-->
+<!--          v-for="tab in tabs"-->
+<!--          :key="tab.id"-->
+<!--          @click="activeTab = tab.id"-->
+<!--          :active="activeTab === tab.id"-->
+<!--        >-->
+<!--          <template v-slot:append>-->
+<!--            <v-icon @click.stop="removeTab(tab.id)" size="25px">mdi-close</v-icon>-->
+<!--          </template>-->
+<!--          {{ tab.name }}-->
+<!--        </v-tab>-->
+<!--        <v-tab @click="addNewTab">-->
+<!--          <v-icon>mdi-plus</v-icon>-->
+<!--        </v-tab>-->
+<!--      </v-tabs>-->
+<!--      <v-menu-->
+<!--        rounded-->
+<!--        open-on-hover-->
+<!--      >-->
+<!--        <template v-slot:activator="{ props }">-->
+<!--          <v-btn icon v-bind="props" style="margin-right: 12px">-->
+<!--            <v-icon>mdi-dots-vertical</v-icon>-->
+<!--          </v-btn>-->
+<!--        </template>-->
+<!--        <v-card>-->
+<!--          <v-card-text>-->
+<!--            <div class="mx-auto text-center">-->
+<!--              <v-btn variant="text" rounded :to="'/'">-->
+<!--                Trang chủ-->
+<!--              </v-btn>-->
+<!--              <v-divider class="my-3"></v-divider>-->
+<!--              <v-btn variant="text" rounded>-->
+<!--                Đăng xuất-->
+<!--              </v-btn>-->
+<!--            </div>-->
+<!--          </v-card-text>-->
+<!--        </v-card>-->
+<!--      </v-menu>-->
+<!--    </v-col>-->
+<!--  </v-row>-->
+<!--  <v-divider thickness="4"></v-divider>-->
+<!--  <v-row style="height: calc(100% - 72px)">-->
+<!--    <template v-if="activeTab !== -1">-->
+<!--      <v-col cols="8" style="height: 100%">-->
+<!--        <Table-->
+<!--          :columns="headers"-->
+<!--          :items="itemsMap.get(activeTab)"-->
+<!--          :row-actions="rowActions"-->
+<!--          :highlight-row="false"-->
+<!--          :have-pagination="false"-->
+<!--        />-->
+<!--      </v-col>-->
+<!--      <v-col cols="4" style="height: 100%">-->
+<!--        <SellInfo-->
+<!--          v-if="forms"-->
+<!--          v-model:info="currentInfo"-->
+<!--          :forms="forms"-->
+<!--        />-->
+<!--      </v-col>-->
+<!--    </template>-->
+<!--  </v-row>-->
 
 </template>
 

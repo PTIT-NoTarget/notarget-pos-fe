@@ -44,7 +44,6 @@ const tableHeight = computed(() => {
   if (props.haveFilter) {
     finalHeight += 42
   }
-  console.log(finalHeight)
   return finalHeight + 'px'
 })
 

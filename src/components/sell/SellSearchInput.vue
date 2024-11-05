@@ -27,7 +27,7 @@ const debouncedSearch = debounce((query: string) => {
     return
   }
   loading.value = true
-  productService.searchProduct(
+  ProductService.searchProduct(
     viewName,
     {
       common: query,
