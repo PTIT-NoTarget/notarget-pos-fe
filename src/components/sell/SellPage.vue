@@ -1,5 +1,7 @@
 <script lang="ts" setup>
+import { OrderService } from '@/services/OrderService'
 import {ViewService} from '@/services/ViewService'
+import { useToastStore } from '@/stores/toast'
 import {RandomUtils} from "@/utils/RandomUtils";
 import { Client, IMessage } from '@stomp/stompjs';
 
@@ -18,6 +20,7 @@ const tabs = ref<any[]>([])
 const viewName: string = 'product_list_sell'
 const formViewName: string[] = ['sell_order_calc', 'sell_order_info', 'sell_order_payment']
 const forms = ref<any>(undefined)
+const successPopupVisible = ref<boolean>(false)
 
 onMounted(() => {
   connectPaymentSocket()
@@ -66,7 +69,7 @@ const connectPaymentSocket = () => {
 
 const onMessageReceived = (payload: IMessage) => {
   const receivedMessage: any = JSON.parse(payload.body);
-  console.log('Received message: ', receivedMessage.content);
+  console.log('Received message: ', receivedMessage.payment_uid);
 };
 
 
@@ -161,7 +164,7 @@ const addNewTab = () => {
     total: 0,
     discount: 0,
     final_total: 0,
-    payment_id: RandomUtils.generateRandomStringAttachTimestamp(12),
+    payment_uid: RandomUtils.generateRandomStringAttachTimestamp(12),
     is_paid: false,
   })
 }
@@ -184,10 +187,29 @@ const removeTab = (id: number) => {
 const currentInfo = computed(() => infoMap.value.get(activeTab.value) || {});
 
 const handleSubmitPayment = () => {
-  const info = infoMap.value.get(activeTab.value)
-  console.log('info', info)
+  const info : any = infoMap.value.get(activeTab.value)
+  const items : any[] = itemsMap.value.get(activeTab.value) || []
   if (info) {
     info.is_paid = true
+    let request = {
+      ...info,
+      order_products: items.map((item) => {
+        let {id, ...rest} = item
+        return {
+          product: {
+            id: id
+          },
+          ...rest
+        }
+      })
+    }
+    OrderService.create(request)
+      .then((res: any) => {
+        useToastStore().showSuccess(res.data.result.message)
+      })
+      .finally(() => {
+        info.is_paid = false
+      })
   }
 }
 
@@ -266,6 +288,10 @@ const handleSubmitPayment = () => {
       </v-col>
     </template>
   </v-row>
+  <PaymentSuccessPopup
+    v-model:visible="successPopupVisible"
+    content="Đơn hàng của bạn đã được ghi nhận"
+  />
 </template>
 
 <style scoped lang="sass">

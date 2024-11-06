@@ -100,7 +100,6 @@ const handlePayment = () => {
             size="80px"
             :rounded="false"
             @click="handlePayment"
-            :loading="modelInfo['is_paid']"
           ></v-btn>
         </v-col>
       </v-row>
