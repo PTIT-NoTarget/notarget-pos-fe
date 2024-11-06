@@ -38,6 +38,10 @@ const qrCodeUrl = computed(() => {
   return `https://img.vietqr.io/image/mbbank-3806062003-qr_only.jpg?amount=${modelInfo.value['final_total']}&addInfo=${modelInfo.value['payment_id']}&accountName=QUAN%20CO%20VAN%20SUU`;
 });
 
+const handlePayment = () => {
+  emit('submit:payment')
+}
+
 </script>
 
 <template>
@@ -89,8 +93,15 @@ const qrCodeUrl = computed(() => {
           </v-btn>
         </v-col>
         <v-col cols="8">
-          <v-btn color="primary" text="Thanh toán" block size="80px" :rounded="false">
-          </v-btn>
+          <v-btn
+            color="primary"
+            text="Thanh toán"
+            block
+            size="80px"
+            :rounded="false"
+            @click="handlePayment"
+            :loading="modelInfo['is_paid']"
+          ></v-btn>
         </v-col>
       </v-row>
     </div>
