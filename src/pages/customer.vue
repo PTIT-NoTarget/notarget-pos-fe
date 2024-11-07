@@ -2,7 +2,9 @@
 definePage({
   meta: {
     hideHeader: false,
-    title: 'Khách hàng'
+    title: 'Khách hàng',
+    requireOTP: true,
+    requireAuth: true,
   },
 })
 </script>

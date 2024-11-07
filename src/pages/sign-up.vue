@@ -1,8 +1,10 @@
 <script setup lang="ts">
 definePage({
   meta: {
-    hideHeader: false,
-    title: 'Đăng ký'
+    hideHeader: true,
+    title: 'Đăng ký',
+    requireOTP: true,
+    requireAuth: true,
   },
 })
 </script>

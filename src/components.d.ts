@@ -28,6 +28,7 @@ declare module 'vue' {
     SellInfoSelect: typeof import('./components/sell/SellInfoSelect.vue')['default']
     SellPage: typeof import('./components/sell/SellPage.vue')['default']
     SellSearchInput: typeof import('./components/sell/SellSearchInput.vue')['default']
+    SignInPage: typeof import('./components/auth/SignInPage.vue')['default']
     Table: typeof import('./components/shared/Table.vue')['default']
     TextInput: typeof import('./components/shared/TextInput.vue')['default']
   }

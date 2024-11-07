@@ -1,8 +1,10 @@
 <script setup lang="ts">
 definePage({
   meta: {
-    hideHeader: false,
-    title: 'Không tìm thấy trang'
+    hideHeader: true,
+    title: 'Không tìm thấy trang',
+    requireOTP: false,
+    requireAuth: false,
   },
 })
 </script>

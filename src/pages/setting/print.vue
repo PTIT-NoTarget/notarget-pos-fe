@@ -2,7 +2,9 @@
 definePage({
   meta: {
     hideHeader: false,
-    title: 'Máy in'
+    title: 'Máy in',
+    requireOTP: true,
+    requireAuth: true,
   },
 })
 </script>

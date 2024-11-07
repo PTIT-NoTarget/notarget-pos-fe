@@ -3,7 +3,9 @@
 definePage({
   meta: {
     hideHeader: false,
-    title: 'Trang chủ'
+    title: 'Trang chủ',
+    requireOTP: true,
+    requireAuth: true,
   },
 })
 </script>
