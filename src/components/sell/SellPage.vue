@@ -44,10 +44,7 @@ onMounted(() => {
     })
 })
 
-const stompClient = new Client({
-  brokerURL: 'ws://localhost:8000/ws',
-  reconnectDelay: 3000,
-});
+const stompClient = new Client();
 
 onBeforeUnmount(() => {
   if (stompClient && stompClient.active) {
@@ -56,6 +53,20 @@ onBeforeUnmount(() => {
 });
 
 const connectPaymentSocket = () => {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    console.error('No access token found');
+    return;
+  }
+
+  stompClient.configure({
+    brokerURL: import.meta.env.VITE_APP_PAYMENT_SOCKET_URL,
+    connectHeaders: {
+      Authorization: 'Bearer ' + token,
+    },
+    reconnectDelay: 5000,
+  });
+
   console.log('Attempting to connect to payment socket');
   stompClient.onConnect = () => {
     console.log('Connected to payment socket');

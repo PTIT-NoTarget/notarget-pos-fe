@@ -34,7 +34,17 @@ router.isReady().then(() => {
 })
 
 router.beforeEach((to, from, next) => {
-  next()
+  let accessToken = localStorage.getItem('access_token')
+  if (to.meta.requireAuth && !accessToken) {
+    console.log('requiresAuth')
+    next('/sign-in')
+  } else if (!to.meta.requireAuth && accessToken) {
+    console.log('not requiresAuth')
+    next('/')
+  } else {
+    console.log('next')
+    next()
+  }
 })
 
 export default router
