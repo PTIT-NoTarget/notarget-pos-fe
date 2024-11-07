@@ -32,7 +32,28 @@ export const payment: any = {
   }
 }
 
+export const payment_status: any = {
+  PENDING: {
+    value: "PENDING",
+    label: "Chờ xử lý",
+  },
+  PAID: {
+    value: "PAID",
+    label: "Đã thanh toán",
+  },
+  DEBT: {
+    value: "DEBT",
+    label: "Nợ",
+  },
+  CANCELLED: {
+    value: "CANCELLED",
+    label: "Đã hủy",
+  }
+}
+
+
 export const Enum = {
   customer_type,
-  payment
+  payment,
+  payment_status
 }

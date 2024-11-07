@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import { OrderService } from '@/services/OrderService'
+import {OrderService} from '@/services/OrderService'
 import {ViewService} from '@/services/ViewService'
-import { useToastStore } from '@/stores/toast'
 import {RandomUtils} from "@/utils/RandomUtils";
-import { Client, IMessage } from '@stomp/stompjs';
+import {Client, IMessage} from '@stomp/stompjs';
+import {Enum} from "@/utils/Enum";
+import {useLoadingStore} from "@/stores/loading";
 
 const headers = ref<any[]>([])
 const itemsMap = ref<Map<number, any[]>>(new Map())
@@ -20,7 +21,9 @@ const tabs = ref<any[]>([])
 const viewName: string = 'product_list_sell'
 const formViewName: string[] = ['sell_order_calc', 'sell_order_info', 'sell_order_payment']
 const forms = ref<any>(undefined)
-const successPopupVisible = ref<boolean>(false)
+const successPopup = ref<any>({
+  visible: false,
+})
 
 onMounted(() => {
   connectPaymentSocket()
@@ -69,9 +72,17 @@ const connectPaymentSocket = () => {
 
 const onMessageReceived = (payload: IMessage) => {
   const receivedMessage: any = JSON.parse(payload.body);
-  console.log('Received message: ', receivedMessage.payment_uid);
+  if(receivedMessage.payment_uid) {
+    for (let [key, val] of infoMap.value.entries()) {
+      if (val.payment_uid === receivedMessage.payment_uid) {
+        successPopup.value.visible = true
+        successPopup.value.payment = receivedMessage.payment;
+        successPopup.value.payment_status = receivedMessage.payment_status;
+        break;
+      }
+    }
+  }
 };
-
 
 watch(
   activeTab,
@@ -161,11 +172,13 @@ const addNewTab = () => {
   activeTab.value = maxId + 1
   itemsMap.value.set(maxId + 1, [])
   infoMap.value.set(maxId + 1, {
+    tabId: maxId + 1,
+    name: 'Hoá đơn ' + (maxId + 1),
     total: 0,
     discount: 0,
     final_total: 0,
+    payment: Enum['payment']['CASH'].value,
     payment_uid: RandomUtils.generateRandomStringAttachTimestamp(12),
-    is_paid: false,
   })
 }
 
@@ -190,7 +203,6 @@ const handleSubmitPayment = () => {
   const info : any = infoMap.value.get(activeTab.value)
   const items : any[] = itemsMap.value.get(activeTab.value) || []
   if (info) {
-    info.is_paid = true
     let request = {
       ...info,
       order_products: items.map((item) => {
@@ -203,12 +215,17 @@ const handleSubmitPayment = () => {
         }
       })
     }
+    useLoadingStore().showLoading()
     OrderService.create(request)
-      .then((res: any) => {
-        useToastStore().showSuccess(res.data.result.message)
+      .then(() => {
+        if(request.payment === Enum['payment']['TRANSFER'].value) {
+          successPopup.value.visible = true
+          successPopup.value.payment = request.payment;
+          successPopup.value.payment_status = Enum['payment_status']['PENDING'].value;
+        }
       })
       .finally(() => {
-        info.is_paid = false
+        useLoadingStore().hideLoading()
       })
   }
 }
@@ -289,8 +306,10 @@ const handleSubmitPayment = () => {
     </template>
   </v-row>
   <PaymentSuccessPopup
-    v-model:visible="successPopupVisible"
-    content="Đơn hàng của bạn đã được ghi nhận"
+    v-if="forms"
+    v-model:visible="successPopup"
+    :info="currentInfo"
+    @submit="removeTab"
   />
 </template>
 

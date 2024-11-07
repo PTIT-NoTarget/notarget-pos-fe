@@ -19,12 +19,6 @@ const modelInfo = computed({
   }
 })
 
-onUpdated(() => {
-  if (!props.info['payment']) {
-    props.info['payment'] = Enum['payment'].CASH.value
-  }
-})
-
 const changeSelectMap = debounce((form: any, common: string = '') => {
   if (form['data_type'] === DataType.RELATION) {
     CustomService.getAutoComplete(form['relate_table'], form['relate_column'], common)
@@ -74,16 +68,7 @@ const handlePayment = () => {
         :column-number="1"
         :tooltip="false"
       />
-      <template v-if="modelInfo['payment'] && modelInfo['payment'] === Enum['payment']['TRANSFER'].value">
-        <v-img
-          :src="qrCodeUrl"
-          width="200"
-          height="200"
-          class="mx-auto mt-3"
-        />
-        <div class="text-center">3806062003</div>
-        <div class="text-center">NGO DANG HAN</div>
-      </template>
+
     </div>
     <div>
       <v-row>
