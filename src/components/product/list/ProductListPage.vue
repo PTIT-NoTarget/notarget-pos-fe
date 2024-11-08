@@ -7,6 +7,7 @@ import {useLoadingStore} from '@/stores/loading';
 import {debounce} from 'lodash'
 import {DataType} from "@/utils/Constant";
 import {CustomService} from "@/services/CustomService";
+import axios from "axios";
 
 const rowActions = ref<any[]>([
   {
@@ -61,23 +62,23 @@ const selectMap = ref<Map<string, any[]>>(new Map())
 
 onMounted(() => {
   useLoadingStore().showLoading()
-  ViewService.getViewByMultiViewName([viewName, formViewName])
-    .then((res: any) => {
-      headers.value = res.data.data[viewName]
-      forms.value = res.data.data[formViewName]
-      return ProductService.searchProduct(viewName, {
-        ...filter.value,
-        pageNumber: 0,
-      })
+  axios.all([
+    ViewService.getViewByMultiViewName([viewName, formViewName]),
+    ProductService.searchProduct(viewName, {
+      ...filter.value,
+      pageNumber: 0,
     })
-    .then((res: any) => {
-      items.value = res.data.data
-      totalData.value = res.data.data_count
-    })
-    .finally(() => {
-      useLoadingStore().hideLoading()
-    })
+  ])
+    .then(axios.spread((viewRes, prodRes) => {
+      headers.value = viewRes.data.data[viewName];
+      forms.value = viewRes.data.data[formViewName];
 
+      items.value = prodRes.data.data;
+      totalData.value = prodRes.data.data_count;
+    }))
+    .finally(() => {
+      useLoadingStore().hideLoading();
+    })
 })
 
 const getProductList = debounce(() => {
@@ -161,9 +162,6 @@ const exportProduct = () => {
       document.body.appendChild(link);
       link.click();
       useToastStore().showSuccess("Export thành công");
-    })
-    .catch(() => {
-      useToastStore().showError("Export thất bại");
     })
     .finally(() => {
       useLoadingStore().hideLoading();

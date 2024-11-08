@@ -1,4 +1,4 @@
-import api from '@/services/interceptors'
+import api from '@/services/interceptors/interceptors'
 
 export const EmployeeService = {
   search (viewName: string, filter: any) {

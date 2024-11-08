@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import router from "@/router";
+import {AuthService} from "@/services/AuthService";
+
 const user: any = {
   initials: 'JD',
   fullName: 'John Doe',
@@ -50,6 +53,9 @@ const rightMenu = [
     title: 'Bán hàng',
     icon: 'mdi-cash-register',
     route: '/sell',
+    action: () => {
+      removeOtp()
+    },
   },
   {
     title: 'Thông báo',
@@ -74,6 +80,23 @@ const rightMenu = [
     ],
   },
 ]
+
+const logout = () => {
+  localStorage.removeItem('access_token')
+  router.push('/sign-in')
+}
+
+const removeOtp = () => {
+  console.log('remove otp')
+  let request = {
+    access_token: localStorage.getItem('access_token'),
+  }
+  AuthService.removeOtp(request)
+    .then((res) => {
+      localStorage.setItem('access_token', res.data.data.access_token)
+      router.push('/sell')
+    })
+}
 
 </script>
 
@@ -119,6 +142,7 @@ const rightMenu = [
               <v-btn
                 variant="text"
                 rounded
+                @click="logout"
               >
                 Log out
               </v-btn>

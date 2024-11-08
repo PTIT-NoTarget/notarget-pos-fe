@@ -19,6 +19,7 @@ declare module 'vue' {
     HomePage: typeof import('./components/home/HomePage.vue')['default']
     ImportExcelPopup: typeof import('./components/shared/ImportExcelPopup.vue')['default']
     IntegerNumberInput: typeof import('./components/shared/IntegerNumberInput.vue')['default']
+    OtpPage: typeof import('./components/auth/OtpPage.vue')['default']
     PaymentSuccessPopup: typeof import('./components/sell/PaymentSuccessPopup.vue')['default']
     ProductListPage: typeof import('./components/product/list/ProductListPage.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

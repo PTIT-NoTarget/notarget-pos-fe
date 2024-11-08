@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {useToastStore} from "@/stores/toast";
-import {ImageService} from "@/services/ImageService";
 
 const props = withDefaults(defineProps<{
   title?: string

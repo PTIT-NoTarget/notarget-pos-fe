@@ -10,6 +10,7 @@ const password = ref<string>('')
 const showPassword = ref<boolean>(false)
 const otpVisible = ref<boolean>(false)
 const otpCode = ref<string>('')
+const otpAccessToken = ref<string>('')
 
 let usernameRules = [
   (v: string) => !!v || 'Username is required',
@@ -39,19 +40,9 @@ const onLoginToAdmin = () => {
     password: password.value
   }
   AuthService.signIn(request)
-    .then((response) => {
-      otpVisible.value = true
-    })
-}
-
-const onLoginToAdminWithOTP = (accessToken: string) => {
-  let request = {
-    access_token: accessToken,
-    otpCode: otpCode.value
-  }
-  AuthService.signInWithOtp(request)
-    .then((response) => {
-      console.log(response)
+    .then((res) => {
+      localStorage.setItem('access_token', res.data.data.access_token)
+      router.push('/otp')
     })
 }
 
@@ -66,7 +57,7 @@ const onLoginToAdminWithOTP = (accessToken: string) => {
       display: 'flex',
       justifyContent: 'end',
       alignItems: 'center',
-      backgroundImage: 'url(http://res.cloudinary.com/blogweb/image/upload/v1730973208/pos/oiryqbpc5safyepd2cdu.jpg)',
+      backgroundImage: 'url(https://res.cloudinary.com/blogweb/image/upload/v1730973208/pos/oiryqbpc5safyepd2cdu.jpg)',
       backgroundSize: 'cover',
       backgroundPosition: 'right'
     }"
@@ -130,32 +121,7 @@ const onLoginToAdminWithOTP = (accessToken: string) => {
       zIndex: 1,
     }"
   ></div>
-  <v-dialog
-    v-model="otpVisible"
-    persistent
-    max-width="500"
-  >
-    <v-card>
-      <v-card-title class="text-center">
-        <h2>Nhập mã OTP</h2>
-      </v-card-title>
-      <v-card-text>
-        <v-otp-input
-          length="6"
-          type="number"
-          v-model="otpCode"
-        ></v-otp-input>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn
-          color="primary"
-          @click="onLoginToAdminWithOTP"
-        >Xác nhận
-        </v-btn>
-        <v-btn color="secondary" @click="otpVisible = false">Hủy</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+
 </template>
 
 <style scoped lang="sass">

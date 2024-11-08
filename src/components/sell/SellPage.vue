@@ -5,6 +5,7 @@ import {RandomUtils} from "@/utils/RandomUtils";
 import {Client, IMessage} from '@stomp/stompjs';
 import {Enum} from "@/utils/Enum";
 import {useLoadingStore} from "@/stores/loading";
+import router from "@/router";
 
 const headers = ref<any[]>([])
 const itemsMap = ref<Map<number, any[]>>(new Map())
@@ -84,7 +85,7 @@ const connectPaymentSocket = () => {
 const onMessageReceived = (payload: IMessage) => {
   const receivedMessage: any = JSON.parse(payload.body);
   if(receivedMessage.payment_uid) {
-    for (let [key, val] of infoMap.value.entries()) {
+    for (let val of infoMap.value.values()) {
       if (val.payment_uid === receivedMessage.payment_uid) {
         successPopup.value.visible = true
         successPopup.value.payment = receivedMessage.payment;
@@ -241,6 +242,10 @@ const handleSubmitPayment = () => {
   }
 }
 
+const logout = () => {
+  localStorage.removeItem('access_token')
+  router.push('/sign-in')
+}
 </script>
 
 <template>
@@ -285,7 +290,7 @@ const handleSubmitPayment = () => {
                 Trang chủ
               </v-btn>
               <v-divider class="my-3"></v-divider>
-              <v-btn variant="text" rounded>
+              <v-btn variant="text" rounded @click="logout">
                 Đăng xuất
               </v-btn>
             </div>

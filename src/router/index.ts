@@ -8,6 +8,7 @@
 import { createRouter, createWebHistory } from 'vue-router/auto'
 import { setupLayouts } from 'virtual:generated-layouts'
 import { routes } from 'vue-router/auto-routes'
+import {TokenUtils} from "@/utils/TokenUtils";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,14 +36,17 @@ router.isReady().then(() => {
 
 router.beforeEach((to, from, next) => {
   let accessToken = localStorage.getItem('access_token')
+  let checkOtp = TokenUtils.checkOtp()
   if (to.meta.requireAuth && !accessToken) {
     console.log('requiresAuth')
     next('/sign-in')
-  } else if (!to.meta.requireAuth && accessToken) {
-    console.log('not requiresAuth')
-    next('/')
+  } else if (to.meta.requireOTP && accessToken) {
+    if (checkOtp) {
+      next()
+    } else {
+      next('/otp')
+    }
   } else {
-    console.log('next')
     next()
   }
 })
