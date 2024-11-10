@@ -51,9 +51,30 @@ export const payment_status: any = {
   }
 }
 
+export const revenue_report: any = {
+  DAY: {
+    value: "DAY",
+    label: "Hôm nay",
+  },
+  WEEK: {
+    value: "WEEK",
+    label: "7 ngày gần nhất",
+  },
+  MONTH: {
+    value: "MONTH",
+    label: "1 tháng gần nhất",
+  },
+  THREE_MONTH: {
+    value: "THREE_MONTH",
+    label: "3 tháng gần nhất",
+  }
+}
+
+
 
 export const Enum = {
   customer_type,
   payment,
-  payment_status
+  payment_status,
+  revenue_report
 }

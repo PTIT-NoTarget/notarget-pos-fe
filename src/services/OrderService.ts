@@ -39,4 +39,21 @@ export const OrderService = {
       data
     )
   },
+
+  revenueReport (timeRange: any) {
+    return api.get(
+      `order/revenue-report`,
+      {
+        params: {
+          type: timeRange,
+        },
+      }
+    )
+  },
+  general() {
+    return api.get(`order/general`)
+  },
+  recent() {
+    return api.get(`order/recent`)
+  }
 }

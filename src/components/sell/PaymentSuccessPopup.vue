@@ -41,7 +41,7 @@ const handleCancel = () => {
 }
 
 const qrCodeUrl = computed(() => {
-  return `https://img.vietqr.io/image/mbbank-3806062003-qr_only.jpg?amount=${props.info['final_total']}&addInfo=${props.info['payment_id']}&accountName=QUAN%20CO%20VAN%20SUU`;
+  return`https://img.vietqr.io/image/mbbank-3806062003-qr_only.jpg?amount=${props.info['final_total']}&addInfo=${props.info['payment_uid']}&accountName=QUAN%20CO%20VAN%20SUU`;
 });
 
 </script>
