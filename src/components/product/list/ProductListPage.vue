@@ -46,6 +46,7 @@ const tableActions = ref<any[]>([
 const headers = ref<any[]>([])
 const items = ref<any[]>([])
 const selected = ref<any[]>([])
+const productTypeSelected = ref<any[]>([])
 const viewName = 'product_list'
 const formViewName = 'product_form_popup'
 const loading = ref<boolean>(false)
@@ -251,12 +252,31 @@ watch(
     deep: true,
   }
 )
+
+watch(
+  productTypeSelected,
+  () => {
+    console.log('productTypeSelected', productTypeSelected.value)
+    filter.value.filter = {
+      ...filter.value.filter,
+      product_type_id: productTypeSelected.value.length > 0 ? {
+        value: productTypeSelected,
+        operator: "in",
+      } : undefined
+    }
+  },
+  {
+    deep: true,
+  }
+)
 </script>
 
 <template>
   <v-row style="width: 100%;height: calc(100vh - 48px);padding: 8px">
-    <v-col cols="2">
-
+    <v-col cols="2" style="position: relative;">
+      <LeftSide
+        :selected="productTypeSelected"
+      />
     </v-col>
     <v-col cols="10">
       <Table
@@ -329,5 +349,6 @@ watch(
 </template>
 
 <style scoped lang="sass">
+
 
 </style>

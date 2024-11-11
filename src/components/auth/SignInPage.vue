@@ -8,9 +8,6 @@ const router = useRouter()
 const username = ref<string>('')
 const password = ref<string>('')
 const showPassword = ref<boolean>(false)
-const otpVisible = ref<boolean>(false)
-const otpCode = ref<string>('')
-const otpAccessToken = ref<string>('')
 
 let usernameRules = [
   (v: string) => !!v || 'Username is required',
@@ -18,7 +15,6 @@ let usernameRules = [
 
 let passwordRules = [
   (v: string) => !!v || 'Password is required',
-  (v: string) => (v && v.length >= 8) || 'Password must be at least 8 characters',
 ]
 
 const onLoginToSell = () => {

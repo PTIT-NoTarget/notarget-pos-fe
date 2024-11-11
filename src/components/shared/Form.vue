@@ -39,6 +39,10 @@ const handleChangeSelectMap = (form: any, value: string = '') => {
   emit('update:change-select-map', form, value)
 }
 
+onMounted(() => {
+  console.log('forms', props.forms)
+})
+
 </script>
 
 <template>

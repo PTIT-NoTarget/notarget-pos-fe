@@ -8,10 +8,12 @@ const props = withDefaults(defineProps<{
   tooltip?: boolean
   keyName?: keyof typeof Enum
   variant?: any
+  canSearch?: boolean
 }>(), {
   editable: false,
   tooltip: true,
-  variant: 'filled'
+  variant: 'filled',
+  canSearch: true
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -38,6 +40,7 @@ const getLabel = (value: string) => {
       <v-tooltip location="top">
         <template v-slot:activator="{ props: slotProps }">
           <v-autocomplete
+            v-if="canSearch"
             v-bind="slotProps"
             density="compact"
             hide-details="auto"
@@ -48,12 +51,24 @@ const getLabel = (value: string) => {
             hide-no-data
             :variant="variant"
           ></v-autocomplete>
+          <v-select
+            v-else
+            v-bind="slotProps"
+            dense
+            v-model="value"
+            :items="items"
+            item-value="value"
+            item-title="label"
+            hide-details
+            :variant="variant"
+          ></v-select>
         </template>
         <span> {{ getLabel(value) }} </span>
       </v-tooltip>
     </template>
     <template v-else>
       <v-autocomplete
+        v-if="canSearch"
         density="compact"
         hide-details="auto"
         v-model="value"
@@ -63,6 +78,16 @@ const getLabel = (value: string) => {
         hide-no-data
         :variant="variant"
       ></v-autocomplete>
+      <v-select
+        v-else
+        dense
+        v-model="value"
+        :items="items"
+        item-value="value"
+        item-title="label"
+        hide-details
+        :variant="variant"
+      ></v-select>
     </template>
   </template>
   <template v-else>

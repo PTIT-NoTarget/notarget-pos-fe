@@ -17,6 +17,7 @@ const props = withDefaults(defineProps<{
   tableActions?: any[];
   showSearch?: boolean;
   havePagination?: boolean;
+  sortable?: boolean;
 }>(), {
   height: 600,
   showSelected: false,
@@ -25,6 +26,7 @@ const props = withDefaults(defineProps<{
   havePagination: true,
   showSearch: false,
   haveFilter: false,
+  sortable: false,
   filter: () => ({
     pageNumber: 1,
     pageSize: 1000000,
@@ -108,7 +110,6 @@ const modelLoading = computed({
 })
 
 const isSelectAll = ref(false)
-// const selectedItems = ref(new Set())
 const activeItem = ref<any>({id: -1})
 const columnFilter = ref<any>({})
 
@@ -346,7 +347,6 @@ const activeColor = '#d1dfe3'
                       hide-details="auto"
                       type="number"
                       variant="solo-filled"
-                      clearable
                     ></v-text-field>
                   </template>
                   <template v-else>
@@ -365,7 +365,6 @@ const activeColor = '#d1dfe3'
                       hide-details="auto"
                       type="number"
                       variant="solo-filled"
-                      clearable
                     ></v-text-field>
                   </template>
                   <template v-else>

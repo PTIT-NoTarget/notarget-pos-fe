@@ -135,13 +135,13 @@ watch([xAxisData, orderData, revenueData], () => {
     series: [
       {
         name: 'Đơn hàng',
-        type: 'bar',
+        type: 'line',
         yAxisIndex: 0,
         data: orderData.value
       },
       {
         name: 'Doanh thu',
-        type: 'line',
+        type: 'bar',
         yAxisIndex: 1,
         data: revenueData.value
       }
@@ -173,11 +173,16 @@ watch([xAxisData, orderData, revenueData], () => {
             <v-row style="font-size: 24px; height: 100%; display: flex; ">
               <v-col cols="6">
                 <v-icon>mdi-package-variant-closed</v-icon>
-                Đơn hàng: <strong>{{ general.total_order }}</strong>
+                Đơn hàng: <strong>{{ general?.total_order }}</strong>
               </v-col>
               <v-col cols="6">
                 <v-icon>mdi-cash</v-icon>
-                Doanh thu: <strong>{{ general.total_revenue }}</strong>
+                Doanh thu: <strong>{{
+                  general?.total_revenue?.toLocaleString('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                  })
+                }}</strong>
               </v-col>
             </v-row>
           </v-card-item>
@@ -201,6 +206,7 @@ watch([xAxisData, orderData, revenueData], () => {
                   :tooltip="false"
                   :variant="'solo-filled'"
                   :key-name="'revenue_report'"
+                  :can-search="false"
                 />
               </div>
             </div>
