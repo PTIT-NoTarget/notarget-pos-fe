@@ -3,11 +3,13 @@ import { computed } from 'vue'
 
 const props = withDefaults(defineProps<{
   editable?: boolean
+  disabled?: boolean
   modelValue: any
   tooltip?: boolean
 }>(), {
   editable: false,
-  tooltip: true
+  tooltip: true,
+  disabled: false
 })
 const emit = defineEmits(['update:modelValue'])
 const value = computed({
@@ -47,6 +49,7 @@ const parseFloatNumber = (value: string) => {
             hide-details="auto"
             :model-modifiers="{ lazy: true }"
             class="text-right"
+            :disabled="disabled"
           ></v-text-field>
         </template>
         <span>{{ formatFloatNumber(value) }}</span>
@@ -61,6 +64,7 @@ const parseFloatNumber = (value: string) => {
         hide-details="auto"
         :model-modifiers="{ lazy: true }"
         class="text-right"
+        :disabled="disabled"
       ></v-text-field>
     </template>
   </template>

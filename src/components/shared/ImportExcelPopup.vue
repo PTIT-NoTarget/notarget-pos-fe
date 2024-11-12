@@ -47,10 +47,18 @@ const handleFileUpload = (event: any) => {
     v-model="modelVisible"
     width="auto"
   >
-    <v-card
-      width="500"
-      :title="title"
-    >
+    <v-card width="500">
+      <v-card-title class="d-flex justify-space-between align-center">
+        <div class="text-h5 text-medium-emphasis ps-2">
+          {{ title }}
+        </div>
+
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="handleCancel"
+        ></v-btn>
+      </v-card-title>
       <v-card-text style="display: flex;flex-direction:column;justify-content: center;align-items: center">
         <v-file-input
           accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

@@ -74,6 +74,33 @@ const saveProductType = () => {
     })
 }
 
+
+const deletePopup = ref<boolean>(false);
+const deleteItem = ref<any>({});
+const openDeletePopup = (item: any) => {
+  deleteItem.value = item
+  deletePopup.value = true
+}
+const deleteProductType = () => {
+  loading.value = true
+  ProductService.deleteProductType(deleteItem.value.id)
+    .then(() => {
+      deletePopup.value = false
+      modelSelected.value = []
+      return ProductService.searchProductType(viewName, {
+        filter: {},
+        sort_property: "id",
+        sort_order: "asc",
+      })
+    })
+    .then((res: any) => {
+      productTypeList.value = res.data.data
+    })
+    .finally(() => {
+      loading.value = false
+    })
+}
+
 </script>
 
 <template>
@@ -84,14 +111,31 @@ const saveProductType = () => {
     >
       <v-expansion-panel-text>
         <template v-for="item in productTypeList">
-          <v-checkbox
-            :model-value="modelSelected.includes(item.id)"
-            :label="item.type_name"
-            hide-details
-            density="compact"
-            @change="(e : any) => handleSelectRow(e, item)"
-          ></v-checkbox>
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <v-checkbox
+              :model-value="modelSelected.includes(item.id)"
+              :label="item.type_name"
+              hide-details
+              density="compact"
+              @change="(e : any) => handleSelectRow(e, item)"
+            ></v-checkbox>
+            <v-btn
+              @click="() => openDeletePopup(item)"
+              size="small"
+              rounded
+              variant="text"
+            >
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+          </div>
         </template>
+        <v-checkbox
+          :model-value="modelSelected.includes(-1)"
+          label="Không phân loại"
+          hide-details
+          density="compact"
+          @change="(e : any) => handleSelectRow(e, {id: -1})"
+        ></v-checkbox>
         <v-btn
           style="width: 100%"
           color="primary"
@@ -108,11 +152,22 @@ const saveProductType = () => {
     v-model="addProductTypePopup"
     width="auto"
     @after-leave="productType = {}"
+    :persistent="true"
   >
     <v-card
       width="600"
-      title="Thông tin loại sản phẩm"
     >
+      <v-card-title class="d-flex justify-space-between align-center">
+        <div class="text-h5 text-medium-emphasis ps-2">
+          Thông tin loại sản phẩm
+        </div>
+
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="addProductTypePopup = false"
+        ></v-btn>
+      </v-card-title>
       <v-card-text>
         <Form
           v-model:item="productType"
@@ -129,6 +184,14 @@ const saveProductType = () => {
       </v-card-actions>
     </v-card>
   </v-dialog>
+  <ConfirmPopup
+    v-model:visible="deletePopup"
+    title="Xác nhận"
+    content="Bạn có chắc chắn muốn xóa loại sản phẩm này không?"
+    alert="Sau khi xóa loại sản phẩm, tất cả sản phẩm thuộc loại này sẽ chuyển thành không phân loại"
+    type="error"
+    @submit="deleteProductType"
+  />
   <v-overlay :model-value="loading" class="align-center justify-center" contained>
     <v-progress-circular color="primary" size="64" indeterminate></v-progress-circular>
   </v-overlay>

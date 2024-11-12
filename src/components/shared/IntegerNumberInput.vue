@@ -3,11 +3,13 @@ import { computed } from 'vue'
 
 const props = withDefaults(defineProps<{
   editable?: boolean
+  disabled?: boolean
   modelValue: any
   tooltip?: boolean
 }>(), {
   editable: false,
-  tooltip: true
+  tooltip: true,
+  disabled: false
 })
 const emit = defineEmits(['update:modelValue'])
 const value = computed({
@@ -54,6 +56,7 @@ const handleNumberChange = (currentValue: any, change: number) => {
             :prepend-inner-icon="'mdi-plus'"
             @click:prepend-inner="() => handleNumberChange(value, 1)"
             class="text-right"
+            :disabled="disabled"
           ></v-text-field>
         </template>
         <span>{{ formatIntegerNumber(value) }}</span>
@@ -72,6 +75,7 @@ const handleNumberChange = (currentValue: any, change: number) => {
         :prepend-inner-icon="'mdi-plus'"
         @click:prepend-inner="() => handleNumberChange(value, 1)"
         class="text-right"
+        :disabled="disabled"
       ></v-text-field>
     </template>
   </template>

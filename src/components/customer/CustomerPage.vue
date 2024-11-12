@@ -135,14 +135,21 @@ const deleteMulti = () => {
 }
 
 const recordPopup = ref<boolean>(false)
+const isEmptyRecord = computed(() => {
+  return Object.keys(record.value).length === 0
+})
 const openAddPopup = () => {
+  record.value = {is_new: true}
   recordPopup.value = true
 }
 const openEditPopup = (item: any) => {
+  recordPopup.value = true
   CustomerService.get(item.id)
     .then((res: any) => {
       record.value = res.data.data
-      recordPopup.value = true
+    })
+    .catch(() => {
+      recordPopup.value = false
     })
 }
 
@@ -191,7 +198,7 @@ const saveAndNewRecord = () => {
   CustomerService.save(record.value)
     .then(() => {
       getProductList()
-      record.value = {}
+      record.value = {is_new: true}
       useToastStore().showSuccess('Lưu khách hàng thành công')
     })
 }
@@ -201,6 +208,7 @@ const saveAndCopyRecord = () => {
       getProductList()
       record.value = {
         ...record.value,
+        is_new: true,
         id: null,
       }
       useToastStore().showSuccess('Lưu khách hàng thành công')
@@ -273,6 +281,7 @@ watch(
         :filter="filter"
         :have-filter="true"
         :total-data="totalData"
+        @handle-row-click="openEditPopup"
       />
     </v-col>
   </v-row>
@@ -283,9 +292,19 @@ watch(
   >
     <v-card
       width="1000"
-      title="Thông tin khách hàng"
     >
-      <v-card-text>
+      <v-card-title class="d-flex justify-space-between align-center">
+        <div class="text-h5 text-medium-emphasis ps-2">
+          Thông tin khách hàng
+        </div>
+
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="recordPopup = false"
+        ></v-btn>
+      </v-card-title>
+      <v-card-text style="position: relative">
         <Form
           v-model:item="record"
           :forms="forms"
@@ -295,6 +314,9 @@ watch(
           :select-map="selectMap"
           @update:change-select-map="changeSelectMap"
         />
+        <v-overlay :model-value="isEmptyRecord" class="align-center justify-center" contained>
+          <v-progress-circular color="primary" size="64" indeterminate></v-progress-circular>
+        </v-overlay>
       </v-card-text>
 
       <v-card-actions>

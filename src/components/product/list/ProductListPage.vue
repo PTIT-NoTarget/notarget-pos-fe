@@ -137,14 +137,21 @@ const deleteMultiProduct = () => {
 }
 
 const productPopup = ref<boolean>(false)
+const isEmptyProduct = computed(() => {
+  return Object.keys(product.value).length === 0
+})
 const openAddPopup = () => {
+  product.value = { is_new: true }
   productPopup.value = true
 }
 const openEditPopup = (item: any) => {
+  productPopup.value = true
   ProductService.getProduct(item.id)
     .then((res: any) => {
       product.value = res.data.data
-      productPopup.value = true
+    })
+    .catch(() => {
+      productPopup.value = false
     })
 }
 
@@ -190,7 +197,7 @@ const saveAndNewProduct = () => {
   ProductService.saveProduct(product.value)
     .then(() => {
       getProductList()
-      product.value = {}
+      product.value = { is_new: true }
       useToastStore().showSuccess('Lưu sản phẩm thành công')
     })
 }
@@ -200,6 +207,7 @@ const saveAndCopyProduct = () => {
       getProductList()
       product.value = {
         ...product.value,
+        is_new: true,
         id: null,
       }
       useToastStore().showSuccess('Lưu sản phẩm thành công')
@@ -256,7 +264,6 @@ watch(
 watch(
   productTypeSelected,
   () => {
-    console.log('productTypeSelected', productTypeSelected.value)
     filter.value.filter = {
       ...filter.value.filter,
       product_type_id: productTypeSelected.value.length > 0 ? {
@@ -294,6 +301,7 @@ watch(
         :filter="filter"
         :have-filter="true"
         :total-data="totalData"
+        @handle-row-click="openEditPopup"
       />
     </v-col>
   </v-row>
@@ -301,12 +309,21 @@ watch(
     v-model="productPopup"
     width="auto"
     @after-leave="product = {}"
+    :persistent="true"
   >
-    <v-card
-      width="1000"
-      title="Thông tin sản phẩm"
-    >
-      <v-card-text>
+    <v-card width="1000">
+      <v-card-title class="d-flex justify-space-between align-center">
+        <div class="text-h5 text-medium-emphasis ps-2">
+          Thông tin sản phẩm
+        </div>
+
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="productPopup = false"
+        ></v-btn>
+      </v-card-title>
+      <v-card-text style="position: relative">
         <Form
           v-model:item="product"
           :forms="forms"
@@ -316,6 +333,9 @@ watch(
           :select-map="selectMap"
           @update:change-select-map="changeSelectMap"
         />
+        <v-overlay :model-value="isEmptyProduct" class="align-center justify-center" contained>
+          <v-progress-circular color="primary" size="64" indeterminate></v-progress-circular>
+        </v-overlay>
       </v-card-text>
 
       <v-card-actions>

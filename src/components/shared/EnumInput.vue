@@ -4,6 +4,7 @@ import {Enum} from "@/utils/Enum";
 
 const props = withDefaults(defineProps<{
   editable?: boolean
+  disabled?: boolean
   modelValue: any
   tooltip?: boolean
   keyName?: keyof typeof Enum
@@ -13,7 +14,8 @@ const props = withDefaults(defineProps<{
   editable: false,
   tooltip: true,
   variant: 'filled',
-  canSearch: true
+  canSearch: true,
+  disabled: false
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -50,6 +52,7 @@ const getLabel = (value: string) => {
             item-title="label"
             hide-no-data
             :variant="variant"
+            :disabled="disabled"
           ></v-autocomplete>
           <v-select
             v-else
@@ -60,6 +63,7 @@ const getLabel = (value: string) => {
             item-value="value"
             item-title="label"
             hide-details
+            :disabled="disabled"
             :variant="variant"
           ></v-select>
         </template>
@@ -76,6 +80,7 @@ const getLabel = (value: string) => {
         item-value="value"
         item-title="label"
         hide-no-data
+        :disabled="disabled"
         :variant="variant"
       ></v-autocomplete>
       <v-select
@@ -86,6 +91,7 @@ const getLabel = (value: string) => {
         item-value="value"
         item-title="label"
         hide-details
+        :disabled="disabled"
         :variant="variant"
       ></v-select>
     </template>

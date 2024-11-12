@@ -3,13 +3,15 @@ import {computed, toRefs} from 'vue'
 
 const props = withDefaults(defineProps<{
   editable?: boolean
+  disabled?: boolean
   modelValue: any
   tooltip?: boolean
   isArea?: boolean
 }>(), {
   editable: false,
   tooltip: true,
-  isArea: false
+  isArea: false,
+  disabled: false
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -34,6 +36,7 @@ const value = computed({
             v-bind="slotProps"
             density="compact"
             v-if="!isArea"
+            :disabled="disabled"
           ></v-text-field>
           <v-textarea
             v-model="value"
@@ -41,6 +44,7 @@ const value = computed({
             v-bind="slotProps"
             density="compact"
             single-line
+            :disabled="disabled"
             v-else
           ></v-textarea>
         </template>
@@ -53,6 +57,7 @@ const value = computed({
         hide-details="auto"
         type="text"
         density="compact"
+        :disabled="disabled"
         v-if="!isArea"
       ></v-text-field>
       <v-textarea
@@ -60,6 +65,7 @@ const value = computed({
         hide-details="auto"
         density="compact"
         single-line
+        :disabled="disabled"
         v-else
       ></v-textarea>
     </template>

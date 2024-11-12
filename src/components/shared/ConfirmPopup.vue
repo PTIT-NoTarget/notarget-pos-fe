@@ -2,6 +2,7 @@
 const props = withDefaults(defineProps<{
   title?: string
   content?: string
+  alert?: string
   visible?: boolean
   type?: string
 }>(), {
@@ -34,13 +35,32 @@ const handleCancel = () => {
   <v-dialog
     v-model="modelVisible"
     width="auto"
+    :persistent="true"
   >
-    <v-card
-      width="500"
-      :title="title"
-    >
+    <v-card width="500">
+      <v-card-title class="d-flex justify-space-between align-center">
+        <div class="text-h5 text-medium-emphasis ps-2">
+          {{ title }}
+        </div>
+
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="handleCancel"
+        ></v-btn>
+      </v-card-title>
       <v-card-text>
-        {{ content }}
+        <div class="mb-3">
+          {{ content }}
+        </div>
+        <v-alert
+          v-if="alert && alert.length > 0"
+          :type="type"
+          variant="outlined"
+          title="Lưu ý"
+        >
+          {{ alert }}
+        </v-alert>
       </v-card-text>
 
       <v-card-actions>

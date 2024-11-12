@@ -54,12 +54,13 @@ watch(() => searchQuery.value, (newVal: string, oldValue: string) => {
         .then((res: any) => {
           emit('add', res.data.data)
           useToast().success(res.data.result.message)
-        })
-        .finally(() => {
           selectedItem.value = null
           searchQuery.value = ''
           searchResults.value = []
           typingCount.value = 0
+        })
+        .catch(() => {
+          debouncedSearch(newVal)
         })
     } else {
       debouncedSearch(newVal)

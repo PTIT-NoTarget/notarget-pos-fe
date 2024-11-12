@@ -7,6 +7,7 @@ import {useLoadingStore} from '@/stores/loading';
 import {debounce} from 'lodash'
 import {DataType} from "@/utils/Constant";
 import {CustomService} from "@/services/CustomService";
+import {CustomerService} from "@/services/CustomerService";
 
 const rowActions = ref<any[]>([
   {
@@ -135,14 +136,21 @@ const deleteMulti = () => {
 }
 
 const recordPopup = ref<boolean>(false)
+const isEmptyRecord = computed(() => {
+  return Object.keys(record.value).length === 0
+})
 const openAddPopup = () => {
+  record.value = {is_new: true}
   recordPopup.value = true
 }
 const openEditPopup = (item: any) => {
-  EmployeeService.get(item.id)
+  recordPopup.value = true
+  CustomerService.get(item.id)
     .then((res: any) => {
       record.value = res.data.data
-      recordPopup.value = true
+    })
+    .catch(() => {
+      recordPopup.value = false
     })
 }
 
@@ -191,7 +199,7 @@ const saveAndNewRecord = () => {
   EmployeeService.save(record.value)
     .then(() => {
       getProductList()
-      record.value = {}
+      record.value = {is_new: true}
       useToastStore().showSuccess('Lưu nhân viên thành công')
     })
 }
@@ -201,6 +209,7 @@ const saveAndCopyRecord = () => {
       getProductList()
       record.value = {
         ...record.value,
+        is_new: true,
         id: null,
       }
       useToastStore().showSuccess('Lưu nhân viên thành công')
@@ -273,6 +282,7 @@ watch(
         :filter="filter"
         :have-filter="true"
         :total-data="totalData"
+        @handle-row-click="openEditPopup"
       />
     </v-col>
   </v-row>
@@ -283,9 +293,19 @@ watch(
   >
     <v-card
       width="1000"
-      title="Thông tin nhân viên"
     >
-      <v-card-text>
+      <v-card-title class="d-flex justify-space-between align-center">
+        <div class="text-h5 text-medium-emphasis ps-2">
+          Thông tin nhân viên
+        </div>
+
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="recordPopup = false"
+        ></v-btn>
+      </v-card-title>
+      <v-card-text style="position: relative">
         <Form
           v-model:item="record"
           :forms="forms"
@@ -295,6 +315,9 @@ watch(
           :select-map="selectMap"
           @update:change-select-map="changeSelectMap"
         />
+        <v-overlay :model-value="isEmptyRecord" class="align-center justify-center" contained>
+          <v-progress-circular color="primary" size="64" indeterminate></v-progress-circular>
+        </v-overlay>
       </v-card-text>
 
       <v-card-actions>
