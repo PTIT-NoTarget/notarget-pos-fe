@@ -78,7 +78,7 @@ onMounted(() => {
 
         items.value = prodRes.data.data;
         totalData.value = prodRes.data.data_count;
-      })
+      }),
     )
     .finally(() => {
       useLoadingStore().hideLoading();
@@ -164,7 +164,7 @@ const exportProduct = () => {
       const url = window.URL.createObjectURL(
         new Blob([res.data], {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        })
+        }),
       );
       const link = document.createElement("a");
       link.href = url;
@@ -183,7 +183,7 @@ const changeSelectMap = debounce((form: any, common: string = "") => {
     CustomService.getAutoComplete(
       form["relate_table"],
       form["relate_column"],
-      common
+      common,
     ).then((res) => {
       selectMap.value.set(form["relate_table"], res.data.data);
     });
@@ -191,8 +191,8 @@ const changeSelectMap = debounce((form: any, common: string = "") => {
 }, 400);
 
 const saveProduct = () => {
-  productPopup.value = false;
   ProductService.saveProduct(product.value).then(() => {
+    productPopup.value = false;
     getProductList();
     useToastStore().showSuccess("Lưu sản phẩm thành công");
   });
@@ -238,7 +238,7 @@ const getExcelTemplate = () => {
       const url = window.URL.createObjectURL(
         new Blob([res.data], {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        })
+        }),
       );
       const link = document.createElement("a");
       link.href = url;
@@ -259,7 +259,7 @@ watch(
   },
   {
     deep: true,
-  }
+  },
 );
 
 watch(
@@ -270,15 +270,15 @@ watch(
       product_type_id:
         productTypeSelected.value.length > 0
           ? {
-              value: productTypeSelected,
-              operator: "in",
-            }
+            value: productTypeSelected,
+            operator: "in",
+          }
           : undefined,
     };
   },
   {
     deep: true,
-  }
+  },
 );
 </script>
 

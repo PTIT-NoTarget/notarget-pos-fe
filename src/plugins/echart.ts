@@ -4,9 +4,10 @@ import { CanvasRenderer } from "echarts/renderers";
 import { BarChart, LineChart, PieChart } from "echarts/charts";
 import {
   GridComponent,
-  TooltipComponent,
-  TitleComponent,
   LegendComponent,
+  TitleComponent,
+  ToolboxComponent,
+  TooltipComponent,
 } from "echarts/components";
 
 use([
@@ -14,6 +15,7 @@ use([
   BarChart,
   LineChart,
   PieChart,
+  ToolboxComponent,
   GridComponent,
   TooltipComponent,
   TitleComponent,
