@@ -1,41 +1,47 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
-const props = withDefaults(defineProps<{
-  editable?: boolean
-  disabled?: boolean
-  modelValue: any
-  tooltip?: boolean
-}>(), {
-  editable: false,
-  tooltip: true,
-  disabled: false
-})
-const emit = defineEmits(['update:modelValue'])
+const props = withDefaults(
+  defineProps<{
+    editable?: boolean;
+    disabled?: boolean;
+    modelValue: any;
+    tooltip?: boolean;
+  }>(),
+  {
+    editable: false,
+    tooltip: true,
+    disabled: false,
+  }
+);
+const emit = defineEmits(["update:modelValue"]);
 const value = computed({
   get: () => props.modelValue,
   set: (newValue) => {
-    emit('update:modelValue', newValue)
-  }
-})
+    emit("update:modelValue", newValue);
+  },
+});
 
 const formatIntegerNumber = (value: string | number) => {
-  if (!value) return '0'
-  const num = typeof value === 'string' ? parseInt(value.replace(/,/g, '')) : value
-  return isNaN(num) ? '0' : num.toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  })
-}
+  if (!value) return "0";
+  const num =
+    typeof value === "string" ? parseInt(value.replace(/,/g, "")) : value;
+  return isNaN(num)
+    ? "0"
+    : num.toLocaleString("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      });
+};
 
 const parseIntegerNumber = (value: any) => {
-  if (value === null || value === '') return 0
-  return parseInt((value + '').replace(/,/g, ''))
-}
+  if (value === null || value === "") return 0;
+  return parseInt((value + "").replace(/,/g, ""));
+};
 
 const handleNumberChange = (currentValue: any, change: number) => {
-  value.value = parseIntegerNumber(currentValue) + change
-}
+  value.value = parseIntegerNumber(currentValue) + change;
+};
 </script>
 
 <template>
@@ -48,7 +54,7 @@ const handleNumberChange = (currentValue: any, change: number) => {
             density="compact"
             :model-value="formatIntegerNumber(value)"
             @update:model-value="(val : any) => value = parseIntegerNumber(val)"
-            @blur="() => value = parseIntegerNumber(value)"
+            @blur="() => (value = parseIntegerNumber(value))"
             hide-details="auto"
             :model-modifiers="{ lazy: true }"
             :append-inner-icon="'mdi-minus'"
@@ -67,7 +73,7 @@ const handleNumberChange = (currentValue: any, change: number) => {
         density="compact"
         :model-value="formatIntegerNumber(value)"
         @update:model-value="(val : any) => value = parseIntegerNumber(val)"
-        @blur="() => value = parseIntegerNumber(value)"
+        @blur="() => (value = parseIntegerNumber(value))"
         hide-details="auto"
         :model-modifiers="{ lazy: true }"
         :append-inner-icon="'mdi-minus'"
@@ -98,5 +104,4 @@ const handleNumberChange = (currentValue: any, change: number) => {
   </template>
 </template>
 
-<style scoped lang="sass">
-</style>
+<style scoped lang="sass"></style>

@@ -2,11 +2,11 @@
 definePage({
   meta: {
     hideHeader: true,
-    title: 'Không tìm thấy trang',
+    title: "Không tìm thấy trang",
     requireOTP: false,
     requireAuth: false,
   },
-})
+});
 </script>
 
 <template>
@@ -18,6 +18,4 @@ definePage({
   ></v-empty-state>
 </template>
 
-<style scoped lang="sass">
-
-</style>
+<style scoped lang="sass"></style>

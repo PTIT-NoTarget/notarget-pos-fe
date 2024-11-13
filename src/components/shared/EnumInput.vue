@@ -1,30 +1,33 @@
 <script setup lang="ts">
-import {computed} from 'vue'
-import {Enum} from "@/utils/Enum";
+import { computed } from "vue";
+import { Enum } from "@/utils/Enum";
 
-const props = withDefaults(defineProps<{
-  editable?: boolean
-  disabled?: boolean
-  modelValue: any
-  tooltip?: boolean
-  keyName?: keyof typeof Enum
-  variant?: any
-  canSearch?: boolean
-}>(), {
-  editable: false,
-  tooltip: true,
-  variant: 'filled',
-  canSearch: true,
-  disabled: false
-})
-const emit = defineEmits(['update:modelValue'])
+const props = withDefaults(
+  defineProps<{
+    editable?: boolean;
+    disabled?: boolean;
+    modelValue: any;
+    tooltip?: boolean;
+    keyName?: keyof typeof Enum;
+    variant?: any;
+    canSearch?: boolean;
+  }>(),
+  {
+    editable: false,
+    tooltip: true,
+    variant: "filled",
+    canSearch: true,
+    disabled: false,
+  }
+);
+const emit = defineEmits(["update:modelValue"]);
 
 const value = computed({
   get: () => props.modelValue,
   set: (newValue) => {
-    emit('update:modelValue', newValue)
-  }
-})
+    emit("update:modelValue", newValue);
+  },
+});
 
 const items = computed(() => {
   return props.keyName ? Object.values(Enum[props.keyName]) : [];
@@ -32,8 +35,7 @@ const items = computed(() => {
 
 const getLabel = (value: string) => {
   return props.keyName ? Enum[props.keyName][value].label : value;
-}
-
+};
 </script>
 
 <template>
@@ -115,5 +117,4 @@ const getLabel = (value: string) => {
   </template>
 </template>
 
-<style scoped lang="sass">
-</style>
+<style scoped lang="sass"></style>

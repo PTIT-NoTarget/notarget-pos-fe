@@ -2,17 +2,15 @@
 definePage({
   meta: {
     hideHeader: true,
-    title: 'OTP',
+    title: "OTP",
     requireOTP: false,
     requireAuth: true,
   },
-})
+});
 </script>
 
 <template>
   <OtpPage />
 </template>
 
-<style scoped lang="sass">
-
-</style>
+<style scoped lang="sass"></style>

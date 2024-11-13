@@ -1,38 +1,43 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
-const props = withDefaults(defineProps<{
-  editable?: boolean
-  disabled?: boolean
-  modelValue: any
-  tooltip?: boolean
-}>(), {
-  editable: false,
-  tooltip: true,
-  disabled: false
-})
-const emit = defineEmits(['update:modelValue'])
+const props = withDefaults(
+  defineProps<{
+    editable?: boolean;
+    disabled?: boolean;
+    modelValue: any;
+    tooltip?: boolean;
+  }>(),
+  {
+    editable: false,
+    tooltip: true,
+    disabled: false,
+  }
+);
+const emit = defineEmits(["update:modelValue"]);
 const value = computed({
   get: () => props.modelValue,
   set: (newValue) => {
-    emit('update:modelValue', newValue)
-  }
-})
+    emit("update:modelValue", newValue);
+  },
+});
 
 const formatFloatNumber = (value: string | number) => {
-  if (!value) return '0'
-  const num = typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : value
-  return isNaN(num) ? '0' : num.toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
-  })
-}
+  if (!value) return "0";
+  const num =
+    typeof value === "string" ? parseFloat(value.replace(/,/g, "")) : value;
+  return isNaN(num)
+    ? "0"
+    : num.toLocaleString("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      });
+};
 
 const parseFloatNumber = (value: string) => {
-  if (value == null || value === '') return 0
-  return parseFloat((value + '').replace(/,/g, ''))
-}
-
+  if (value == null || value === "") return 0;
+  return parseFloat((value + "").replace(/,/g, ""));
+};
 </script>
 
 <template>
@@ -45,7 +50,7 @@ const parseFloatNumber = (value: string) => {
             density="compact"
             :model-value="formatFloatNumber(value)"
             @update:model-value="(val : any) => value = parseFloatNumber(val)"
-            @blur="() => value = parseFloatNumber(value)"
+            @blur="() => (value = parseFloatNumber(value))"
             hide-details="auto"
             :model-modifiers="{ lazy: true }"
             class="text-right"
@@ -60,7 +65,7 @@ const parseFloatNumber = (value: string) => {
         density="compact"
         :model-value="formatFloatNumber(value)"
         @update:model-value="(val : any) => value = parseFloatNumber(val)"
-        @blur="() => value = parseFloatNumber(value)"
+        @blur="() => (value = parseFloatNumber(value))"
         hide-details="auto"
         :model-modifiers="{ lazy: true }"
         class="text-right"
@@ -72,9 +77,9 @@ const parseFloatNumber = (value: string) => {
     <template v-if="tooltip">
       <v-tooltip location="top">
         <template v-slot:activator="{ props }">
-        <span v-bind="props" class="d-block text-right me-3">
-          {{ formatFloatNumber(value) }}
-        </span>
+          <span v-bind="props" class="d-block text-right me-3">
+            {{ formatFloatNumber(value) }}
+          </span>
         </template>
         <span>{{ formatFloatNumber(value) }}</span>
       </v-tooltip>
@@ -87,6 +92,4 @@ const parseFloatNumber = (value: string) => {
   </template>
 </template>
 
-<style scoped lang="sass">
-
-</style>
+<style scoped lang="sass"></style>

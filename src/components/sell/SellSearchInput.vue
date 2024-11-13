@@ -1,75 +1,74 @@
 <script setup lang="ts">
+import { ProductService } from "@/services/ProductService";
+import { debounce } from "lodash";
+import { useToast } from "vue-toastification";
 
-import { ProductService } from '@/services/ProductService'
-import { debounce } from 'lodash'
-import {useToast} from "vue-toastification";
-
-const emit = defineEmits()
-const selectedItem = ref<any>(null)
-const searchResults = ref<any[]>([])
-const searchQuery = ref<string>('')
-const typingCount = ref<number>(0)
-const loading = ref<boolean>(false)
-const viewName = 'product_list'
+const emit = defineEmits();
+const selectedItem = ref<any>(null);
+const searchResults = ref<any[]>([]);
+const searchQuery = ref<string>("");
+const typingCount = ref<number>(0);
+const loading = ref<boolean>(false);
+const viewName = "product_list";
 
 const handleSelect = (val: any) => {
   if (val) {
-    emit('add', val)
-    selectedItem.value = null
-    searchQuery.value = ''
-    searchResults.value = []
+    emit("add", val);
+    selectedItem.value = null;
+    searchQuery.value = "";
+    searchResults.value = [];
   }
-}
+};
 
 const debouncedSearch = debounce((query: string) => {
-  if (!query || query === '') {
-    searchResults.value = []
-    return
+  if (!query || query === "") {
+    searchResults.value = [];
+    return;
   }
-  loading.value = true
-  ProductService.searchProduct(
-    viewName,
-    {
-      common: query,
-    })
+  loading.value = true;
+  ProductService.searchProduct(viewName, {
+    common: query,
+  })
     .then((res: any) => {
-      searchResults.value = res.data.data
+      searchResults.value = res.data.data;
     })
     .finally(() => {
-      loading.value = false
-    })
-}, 400)
+      loading.value = false;
+    });
+}, 400);
 
-watch(() => searchQuery.value, (newVal: string, oldValue: string) => {
-  if (newVal.length > oldValue.length) {
-    typingCount.value++
-  }
-  if (newVal.length < oldValue.length) {
-    typingCount.value = typingCount.value > 0 ? typingCount.value - 1 : 0
-  }
-  typingCount.value = newVal.length === 0 ? 0 : typingCount.value
-  if (newVal !== '') {
-    if (typingCount.value < newVal.length) {
-      ProductService.getProductByCode(newVal)
-        .then((res: any) => {
-          emit('add', res.data.data)
-          useToast().success(res.data.result.message)
-          selectedItem.value = null
-          searchQuery.value = ''
-          searchResults.value = []
-          typingCount.value = 0
-        })
-        .catch(() => {
-          debouncedSearch(newVal)
-        })
-    } else {
-      debouncedSearch(newVal)
+watch(
+  () => searchQuery.value,
+  (newVal: string, oldValue: string) => {
+    if (newVal.length > oldValue.length) {
+      typingCount.value++;
     }
-  } else {
-    searchResults.value = []
+    if (newVal.length < oldValue.length) {
+      typingCount.value = typingCount.value > 0 ? typingCount.value - 1 : 0;
+    }
+    typingCount.value = newVal.length === 0 ? 0 : typingCount.value;
+    if (newVal !== "") {
+      if (typingCount.value < newVal.length) {
+        ProductService.getProductByCode(newVal)
+          .then((res: any) => {
+            emit("add", res.data.data);
+            useToast().success(res.data.result.message);
+            selectedItem.value = null;
+            searchQuery.value = "";
+            searchResults.value = [];
+            typingCount.value = 0;
+          })
+          .catch(() => {
+            debouncedSearch(newVal);
+          });
+      } else {
+        debouncedSearch(newVal);
+      }
+    } else {
+      searchResults.value = [];
+    }
   }
-})
-
+);
 </script>
 
 <template>
@@ -93,7 +92,6 @@ watch(() => searchQuery.value, (newVal: string, oldValue: string) => {
     @update:search="searchQuery = $event"
     @blur="searchQuery = ''"
     @select="handleSelect"
-
   >
     <template v-slot:item="{ props, item }">
       <v-list-item v-bind="props">
@@ -106,7 +104,9 @@ watch(() => searchQuery.value, (newVal: string, oldValue: string) => {
             class="mr-3"
           ></v-img>
         </template>
-        <v-list-item-title class="text-h5">{{ item.raw.product_name }}</v-list-item-title>
+        <v-list-item-title class="text-h5">{{
+          item.raw.product_name
+        }}</v-list-item-title>
       </v-list-item>
     </template>
   </v-autocomplete>
@@ -118,5 +118,4 @@ watch(() => searchQuery.value, (newVal: string, oldValue: string) => {
 
 .v-autocomplete__content
   max-height: 800px !important
-
 </style>

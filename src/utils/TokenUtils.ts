@@ -1,8 +1,8 @@
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 export const TokenUtils = {
   getDataFromToken(): any {
-    const accessToken = localStorage.getItem('access_token');
+    const accessToken = localStorage.getItem("access_token");
     if (!accessToken) return null;
     return jwtDecode(accessToken);
   },
@@ -20,5 +20,5 @@ export const TokenUtils = {
     const data = this.getDataFromToken();
     if (!data) return false;
     return data.otp;
-  }
-}
+  },
+};

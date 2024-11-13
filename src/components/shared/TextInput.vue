@@ -1,27 +1,30 @@
 <script setup lang="ts">
-import {computed, toRefs} from 'vue'
+import { computed, toRefs } from "vue";
 
-const props = withDefaults(defineProps<{
-  editable?: boolean
-  disabled?: boolean
-  modelValue: any
-  tooltip?: boolean
-  isArea?: boolean
-}>(), {
-  editable: false,
-  tooltip: true,
-  isArea: false,
-  disabled: false
-})
-const emit = defineEmits(['update:modelValue'])
+const props = withDefaults(
+  defineProps<{
+    editable?: boolean;
+    disabled?: boolean;
+    modelValue: any;
+    tooltip?: boolean;
+    isArea?: boolean;
+  }>(),
+  {
+    editable: false,
+    tooltip: true,
+    isArea: false,
+    disabled: false,
+  }
+);
+const emit = defineEmits(["update:modelValue"]);
 
-const {editable, tooltip, modelValue} = toRefs(props)
+const { editable, tooltip, modelValue } = toRefs(props);
 const value = computed({
   get: () => modelValue.value,
   set: (newValue) => {
-    emit('update:modelValue', newValue)
-  }
-})
+    emit("update:modelValue", newValue);
+  },
+});
 </script>
 
 <template>
@@ -89,5 +92,4 @@ const value = computed({
   </template>
 </template>
 
-<style scoped lang="sass">
-</style>
+<style scoped lang="sass"></style>

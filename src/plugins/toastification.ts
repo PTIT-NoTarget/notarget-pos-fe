@@ -1,7 +1,7 @@
-import { createApp } from 'vue'
-import Toast, { PluginOptions } from 'vue-toastification'
-import 'vue-toastification/dist/index.css'
-import { POSITION } from 'vue-toastification/src/ts/constants'
+import { createApp } from "vue";
+import Toast, { PluginOptions } from "vue-toastification";
+import "vue-toastification/dist/index.css";
+import { POSITION } from "vue-toastification/src/ts/constants";
 
 const options: PluginOptions = {
   position: POSITION.TOP_RIGHT,
@@ -13,13 +13,13 @@ const options: PluginOptions = {
   draggablePercent: 0.6,
   showCloseButtonOnHover: false,
   hideProgressBar: false,
-  closeButton: 'button',
+  closeButton: "button",
   icon: true,
   rtl: false,
-}
+};
 
 export default {
-  install (app: ReturnType<typeof createApp>) {
-    app.use(Toast, options)
+  install(app: ReturnType<typeof createApp>) {
+    app.use(Toast, options);
   },
-}
+};

@@ -1,22 +1,25 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
-const props = withDefaults(defineProps<{
-  title: any
-  modelValue: any
-  list: any
-  label?: string
-}>(), {
-  label: 'label'
-})
+const props = withDefaults(
+  defineProps<{
+    title: any;
+    modelValue: any;
+    list: any;
+    label?: string;
+  }>(),
+  {
+    label: "label",
+  }
+);
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(["update:modelValue"]);
 const value = computed({
   get: () => props.modelValue,
   set: (newValue) => {
-    emit('update:modelValue', newValue)
-  }
-})
+    emit("update:modelValue", newValue);
+  },
+});
 </script>
 
 <template>
@@ -42,6 +45,4 @@ const value = computed({
   </v-row>
 </template>
 
-<style scoped lang="sass">
-
-</style>
+<style scoped lang="sass"></style>

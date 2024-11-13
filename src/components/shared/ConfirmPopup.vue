@@ -1,53 +1,47 @@
 <script setup lang="ts">
-const props = withDefaults(defineProps<{
-  title?: string
-  content?: string
-  alert?: string
-  visible?: boolean
-  type?: string
-}>(), {
-  title: '',
-  content: '',
-  visible: false,
-  type: 'primary',
-})
+const props = withDefaults(
+  defineProps<{
+    title?: string;
+    content?: string;
+    alert?: string;
+    visible?: boolean;
+    type?: string;
+  }>(),
+  {
+    title: "",
+    content: "",
+    visible: false,
+    type: "primary",
+  }
+);
 
-const emit = defineEmits()
+const emit = defineEmits();
 
 const submit = () => {
-  emit('submit')
-}
+  emit("submit");
+};
 
 const modelVisible = computed({
   get: () => props.visible,
   set: (newValue) => {
-    emit('update:visible', newValue)
-  }
-})
+    emit("update:visible", newValue);
+  },
+});
 
 const handleCancel = () => {
-  modelVisible.value = false
-}
-
+  modelVisible.value = false;
+};
 </script>
 
 <template>
-  <v-dialog
-    v-model="modelVisible"
-    width="auto"
-    :persistent="true"
-  >
+  <v-dialog v-model="modelVisible" width="auto" :persistent="true">
     <v-card width="500">
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="text-h5 text-medium-emphasis ps-2">
           {{ title }}
         </div>
 
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          @click="handleCancel"
-        ></v-btn>
+        <v-btn icon="mdi-close" variant="text" @click="handleCancel"></v-btn>
       </v-card-title>
       <v-card-text>
         <div class="mb-3">
@@ -64,13 +58,20 @@ const handleCancel = () => {
       </v-card-text>
 
       <v-card-actions>
-        <v-btn :color="type" :border="type" @click="handleCancel" variant="outlined">Hủy</v-btn>
-        <v-btn :color="type" :border="type" @click="submit" variant="elevated">Xác nhận</v-btn>
+        <v-btn
+          :color="type"
+          :border="type"
+          @click="handleCancel"
+          variant="outlined"
+        >
+          Hủy
+        </v-btn>
+        <v-btn :color="type" :border="type" @click="submit" variant="elevated">
+          Xác nhận
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
-<style scoped lang="sass">
-
-</style>
+<style scoped lang="sass"></style>

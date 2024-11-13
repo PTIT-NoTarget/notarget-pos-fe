@@ -1,8 +1,13 @@
-import ECharts from 'vue-echarts'
-import { use } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { BarChart, LineChart, PieChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, TitleComponent, LegendComponent } from 'echarts/components'
+import ECharts from "vue-echarts";
+import { use } from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
+import { BarChart, LineChart, PieChart } from "echarts/charts";
+import {
+  GridComponent,
+  TooltipComponent,
+  TitleComponent,
+  LegendComponent,
+} from "echarts/components";
 
 use([
   CanvasRenderer,
@@ -13,10 +18,10 @@ use([
   TooltipComponent,
   TitleComponent,
   LegendComponent,
-])
+]);
 
 export default {
   install(app: ReturnType<typeof createApp>) {
-    app.component('v-echart', ECharts)
+    app.component("v-echart", ECharts);
   },
-}
+};

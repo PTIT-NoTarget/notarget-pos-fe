@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-main>
-      <router-view/>
+      <router-view />
     </v-main>
   </v-app>
 </template>
@@ -11,7 +11,6 @@
 </script>
 
 <style>
-
 * {
   scrollbar-width: thin; /* Đối với Firefox */
   scrollbar-color: #b0b0b0 #e0e0e0; /* Màu xám nhạt hơn */
@@ -39,5 +38,4 @@
 ::-webkit-scrollbar-corner {
   background: #e0e0e0;
 }
-
 </style>

@@ -1,220 +1,256 @@
 <script lang="ts" setup>
-import {DataType} from '@/utils/Constant'
+import { DataType } from "@/utils/Constant";
 
-const props = withDefaults(defineProps<{
-  height?: number;
-  columns: any[];
-  items: any[];
-  selectMap?: Map<string, any[]>;
-  rowActions?: any[];
-  filter?: any;
-  haveFilter?: boolean;
-  selected?: any[];
-  showSelected?: boolean;
-  totalData?: number;
-  loading?: boolean;
-  highlightRow?: boolean;
-  tableActions?: any[];
-  showSearch?: boolean;
-  havePagination?: boolean;
-  sortable?: boolean;
-}>(), {
-  height: 600,
-  showSelected: false,
-  highlightRow: false,
-  loading: false,
-  havePagination: true,
-  showSearch: false,
-  haveFilter: false,
-  sortable: false,
-  filter: () => ({
-    pageNumber: 1,
-    pageSize: 1000000,
-  }),
-  selected: () => [],
-})
+const props = withDefaults(
+  defineProps<{
+    height?: number;
+    columns: any[];
+    items: any[];
+    selectMap?: Map<string, any[]>;
+    rowActions?: any[];
+    filter?: any;
+    haveFilter?: boolean;
+    selected?: any[];
+    showSelected?: boolean;
+    totalData?: number;
+    loading?: boolean;
+    highlightRow?: boolean;
+    tableActions?: any[];
+    showSearch?: boolean;
+    havePagination?: boolean;
+    sortable?: boolean;
+  }>(),
+  {
+    height: 600,
+    showSelected: false,
+    highlightRow: false,
+    loading: false,
+    havePagination: true,
+    showSearch: false,
+    haveFilter: false,
+    sortable: false,
+    filter: () => ({
+      pageNumber: 1,
+      pageSize: 1000000,
+    }),
+    selected: () => [],
+  }
+);
 
-const emit = defineEmits()
+const emit = defineEmits();
 
 const tableHeight = computed(() => {
-  let itemCount = Math.min((props.items ? props.items.length : 0), props.filter['pageSize']) + 1
-  let calculatedHeight = itemCount * rowHeight + 10
-  let finalHeight = Math.min(calculatedHeight, props.height)
-  if (props.tableActions && props.tableActions.length > 0 && finalHeight === props.height) {
-    finalHeight -= 60
+  let itemCount =
+    Math.min(props.items ? props.items.length : 0, props.filter["pageSize"]) +
+    1;
+  let calculatedHeight = itemCount * rowHeight + 10;
+  let finalHeight = Math.min(calculatedHeight, props.height);
+  if (
+    props.tableActions &&
+    props.tableActions.length > 0 &&
+    finalHeight === props.height
+  ) {
+    finalHeight -= 60;
   }
   if (props.haveFilter) {
-    finalHeight += 42
+    finalHeight += 42;
   }
-  return finalHeight + 'px'
-})
+  return finalHeight + "px";
+});
 
 const pxToNumber = (px: string) => {
-  return Number(px.replace('px', ''))
-}
+  return Number(px.replace("px", ""));
+};
 
 const tableHeaders = computed(() => {
-  let header: any[] = []
-  let fixedLeftPx: number = props.showSelected ? 50 : 0
-  let fixedRightPx: number = 0
-  let firstRightColumn: any = null
-  let lastLeftColumn: any = null
+  let header: any[] = [];
+  let fixedLeftPx: number = props.showSelected ? 50 : 0;
+  let fixedRightPx: number = 0;
+  let firstRightColumn: any = null;
+  let lastLeftColumn: any = null;
   for (let i = 0; i < props.columns.length; i++) {
-    const column = props.columns[i]
+    const column = props.columns[i];
     if (column?.is_fixed === -1) {
-      lastLeftColumn = column
+      lastLeftColumn = column;
     } else if (column?.is_fixed === 1 && !firstRightColumn) {
-      firstRightColumn = column
+      firstRightColumn = column;
     }
   }
 
   for (let i = 0; i < props.columns.length; i++) {
-    const column = props.columns[i]
-    let fixedPx: number = 0
+    const column = props.columns[i];
+    let fixedPx: number = 0;
     if (column?.is_fixed === -1) {
-      fixedPx = fixedLeftPx
-      fixedLeftPx += pxToNumber(column?.width)
+      fixedPx = fixedLeftPx;
+      fixedLeftPx += pxToNumber(column?.width);
     } else if (column?.is_fixed === 1) {
-      fixedPx = fixedRightPx
-      fixedRightPx += pxToNumber(column?.width)
+      fixedPx = fixedRightPx;
+      fixedRightPx += pxToNumber(column?.width);
     }
     header.push({
       ...column,
       fixedPx: fixedPx,
       lastLeft: column?.keyName === lastLeftColumn?.keyName,
       firstRight: column?.keyName === firstRightColumn?.keyName,
-    })
+    });
   }
-  return header
-})
+  return header;
+});
 
 const tableItems = computed(() => {
   if (props.haveFilter) {
-    return [{haveFilter: true}, ...props.items]
+    return [{ haveFilter: true }, ...props.items];
   }
-  return props.items
-})
+  return props.items;
+});
 
 const modelSelected = computed({
   get: () => props.selected,
   set: (newValue) => {
-    emit('update:selected', newValue)
-  }
-})
+    emit("update:selected", newValue);
+  },
+});
 
 const modelLoading = computed({
   get: () => props.loading,
   set: (newValue) => {
-    emit('update:loading', newValue)
-  }
-})
+    emit("update:loading", newValue);
+  },
+});
 
-const isSelectAll = ref(false)
-const activeItem = ref<any>({id: -1})
-const columnFilter = ref<any>({})
+const isSelectAll = ref(false);
+const activeItem = ref<any>({ id: -1 });
+const columnFilter = ref<any>({});
 
 const handleSelectAll = (event: Event) => {
-  const checked = (event.target as HTMLInputElement).checked
-  isSelectAll.value = checked
+  const checked = (event.target as HTMLInputElement).checked;
+  isSelectAll.value = checked;
   if (checked) {
-    modelSelected.value = props.items.map(item => item.id)
+    modelSelected.value = props.items.map((item) => item.id);
   } else {
-    modelSelected.value = []
+    modelSelected.value = [];
   }
-}
+};
 
 const handleSelectRow = (event: Event, item: any) => {
-  const checked = (event.target as HTMLInputElement).checked
+  const checked = (event.target as HTMLInputElement).checked;
   if (checked) {
-    modelSelected.value.push(item.id)
+    modelSelected.value.push(item.id);
   } else {
-    modelSelected.value = modelSelected.value.filter((id: any) => id !== item.id)
+    modelSelected.value = modelSelected.value.filter(
+      (id: any) => id !== item.id
+    );
   }
-  isSelectAll.value = modelSelected.value.length === props.items.length
-}
+  isSelectAll.value = modelSelected.value.length === props.items.length;
+};
 
 watch(
   modelSelected,
   (newVal: any) => {
-    isSelectAll.value = newVal.length === props.items.length
+    isSelectAll.value = newVal.length === props.items.length;
   },
   {
     deep: true,
   }
-)
+);
 
 const columnStyle = (column: any, isHeader: boolean = false, item?: any) => {
   let basic: any = {
-    width: column['width'],
-    minWidth: column['width'],
-    maxWidth: column['width'],
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    backgroundColor: isHeader ? headerColor : (props.highlightRow && !item.haveFilter && activeItem.value.id === item?.id ?
-      activeColor : 'white'),
-    position: 'relative',
-  }
+    width: column["width"],
+    minWidth: column["width"],
+    maxWidth: column["width"],
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    backgroundColor: isHeader
+      ? headerColor
+      : props.highlightRow &&
+        !item.haveFilter &&
+        activeItem.value.id === item?.id
+      ? activeColor
+      : "white",
+    position: "relative",
+  };
   if (column?.is_fixed === 1) {
     return {
       ...basic,
-      right: column['fixedPx'] + 'px',
-      position: 'sticky',
-      backgroundColor: isHeader ? headerColor : (props.highlightRow && !item.haveFilter && activeItem.value.id === item?.id ?
-        activeColor : 'white'),
+      right: column["fixedPx"] + "px",
+      position: "sticky",
+      backgroundColor: isHeader
+        ? headerColor
+        : props.highlightRow &&
+          !item.haveFilter &&
+          activeItem.value.id === item?.id
+        ? activeColor
+        : "white",
       zIndex: isHeader ? 100 : 1,
-      boxShadow: column['lastLeft'] ? '-2px 0 5px -2px rgba(0, 0, 0, 0.5)' : 'none',
-    }
+      boxShadow: column["lastLeft"]
+        ? "-2px 0 5px -2px rgba(0, 0, 0, 0.5)"
+        : "none",
+    };
   } else if (column?.is_fixed === -1) {
     return {
       ...basic,
-      left: column['fixedPx'] + 'px',
-      position: 'sticky',
-      backgroundColor: isHeader ? headerColor : (props.highlightRow && !item.haveFilter && activeItem.value.id === item?.id ?
-        activeColor : 'white'),
+      left: column["fixedPx"] + "px",
+      position: "sticky",
+      backgroundColor: isHeader
+        ? headerColor
+        : props.highlightRow &&
+          !item.haveFilter &&
+          activeItem.value.id === item?.id
+        ? activeColor
+        : "white",
       zIndex: isHeader ? 100 : 1,
-      boxShadow: column['firstRight'] ? '2px 0 5px -2px rgba(0, 0, 0, 0.5)' : 'none',
-    }
+      boxShadow: column["firstRight"]
+        ? "2px 0 5px -2px rgba(0, 0, 0, 0.5)"
+        : "none",
+    };
   }
-  return basic
-}
+  return basic;
+};
 
 const handleRowClick = (item: any) => {
   if (activeItem.value.id === item.id) {
-    emit('handleRowClick', item)
-    return
+    emit("handleRowClick", item);
+    return;
   }
-  activeItem.value = item
-}
+  activeItem.value = item;
+};
 
 watch(
   columnFilter,
   (newVal: any) => {
     for (let key in newVal) {
-      if (newVal[key] === '') {
-        delete props.filter['filter'][key]
+      if (newVal[key] === "") {
+        delete props.filter["filter"][key];
       } else {
-        props.filter['filter'][key] = {
+        props.filter["filter"][key] = {
           value: newVal[key],
-          operator: 'like',
-        }
+          operator: "like",
+        };
       }
     }
   },
   {
     deep: true,
   }
-)
+);
 
-const rowHeight = 42
-const headerColor = '#65aad3'
-const activeColor = '#d1dfe3'
-
+const rowHeight = 42;
+const headerColor = "#65aad3";
+const activeColor = "#d1dfe3";
 </script>
 
 <template>
   <template v-if="props.tableActions && props.tableActions.length > 0">
-    <div style="height: 42px;display: flex;align-items: center;justify-content: space-between">
+    <div
+      style="
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      "
+    >
       <div>
         <v-text-field
           v-if="showSearch"
@@ -248,7 +284,11 @@ const activeColor = '#d1dfe3'
   >
     <template v-slot:headers="{ columns, props }">
       <tr v-bind="props">
-        <td v-if="showSelected" :style="columnStyle({width: '50px', is_fixed: -1, fixedPx: 0}, true)"
+        <td
+          v-if="showSelected"
+          :style="
+            columnStyle({ width: '50px', is_fixed: -1, fixedPx: 0 }, true)
+          "
         >
           <v-checkbox
             v-model="isSelectAll"
@@ -259,10 +299,10 @@ const activeColor = '#d1dfe3'
           ></v-checkbox>
         </td>
         <template v-for="column in columns" :key="column['key_name']">
-          <td :style="columnStyle(column, true)"
-              class="text-center"
-          >
-            <span style="font-size: 18px;font-weight: bold">{{ column['key_title'] }}</span>
+          <td :style="columnStyle(column, true)" class="text-center">
+            <span style="font-size: 18px; font-weight: bold">{{
+              column["key_title"]
+            }}</span>
           </td>
         </template>
       </tr>
@@ -270,7 +310,16 @@ const activeColor = '#d1dfe3'
     <template v-slot:body="{ items, columns }" style="position: relative">
       <template v-for="item in items">
         <tr @click="handleRowClick(item)" v-bind="props">
-          <td v-if="showSelected" :style="columnStyle({width: '50px', is_fixed: -1, fixedPx: 0},false, item)">
+          <td
+            v-if="showSelected"
+            :style="
+              columnStyle(
+                { width: '50px', is_fixed: -1, fixedPx: 0 },
+                false,
+                item
+              )
+            "
+          >
             <v-checkbox
               v-if="!item.haveFilter"
               :model-value="modelSelected.includes(item.id)"
@@ -281,7 +330,7 @@ const activeColor = '#d1dfe3'
           </td>
           <template v-for="column in columns" :key="column['key_name']">
             <template v-if="column['key_name'] !== 'actions'">
-              <td :style="columnStyle(column,false, item)">
+              <td :style="columnStyle(column, false, item)">
                 <template v-if="column['data_type'] === DataType.RELATION">
                   <template v-if="column['is_edit']">
                     <!--                  <v-tooltip location="top">-->
@@ -312,11 +361,17 @@ const activeColor = '#d1dfe3'
                   <template v-else>
                     <v-tooltip location="top">
                       <template v-slot:activator="{ props }">
-                      <span v-bind="props" class="d-block text-right">
-                        {{ item[column['relate_table']]?.[column['relate_column']] }}
-                      </span>
+                        <span v-bind="props" class="d-block text-right">
+                          {{
+                            item[column["relate_table"]]?.[
+                              column["relate_column"]
+                            ]
+                          }}
+                        </span>
                       </template>
-                      <span>{{ item[column['relate_table']]?.[column['relate_column']] }}</span>
+                      <span>{{
+                        item[column["relate_table"]]?.[column["relate_column"]]
+                      }}</span>
                     </v-tooltip>
                   </template>
                 </template>
@@ -339,7 +394,12 @@ const activeColor = '#d1dfe3'
                     />
                   </template>
                 </template>
-                <template v-else-if="column['data_type'] === DataType.INTEGER || column['data_type'] === DataType.LONG">
+                <template
+                  v-else-if="
+                    column['data_type'] === DataType.INTEGER ||
+                    column['data_type'] === DataType.LONG
+                  "
+                >
                   <template v-if="item.haveFilter">
                     <v-text-field
                       v-model="columnFilter[column['key_name']]"
@@ -376,9 +436,7 @@ const activeColor = '#d1dfe3'
                   </template>
                 </template>
                 <template v-else-if="column['data_type'] === DataType.IMAGE">
-                  <template v-if="column['is_edit']">
-
-                  </template>
+                  <template v-if="column['is_edit']"> </template>
                   <template v-else>
                     <v-img
                       :src="item[column['key_name']]"
@@ -482,12 +540,23 @@ const activeColor = '#d1dfe3'
                   </template>
                 </template>
               </td>
-
             </template>
             <template v-else>
-              <td :style="{ ...columnStyle(column, false, item)}" class="text-center">
-                <template v-if="!item.haveFilter" v-for="action in rowActions" :key="action.label">
-                  <v-btn density="comfortable" @click="action.action(item)" rounded class="mx-1">
+              <td
+                :style="{ ...columnStyle(column, false, item) }"
+                class="text-center"
+              >
+                <template
+                  v-if="!item.haveFilter"
+                  v-for="action in rowActions"
+                  :key="action.label"
+                >
+                  <v-btn
+                    density="comfortable"
+                    @click="action.action(item)"
+                    rounded
+                    class="mx-1"
+                  >
                     <v-icon :icon="'mdi-' + action.icon"></v-icon>
                     {{ action.label }}
                   </v-btn>
@@ -497,8 +566,16 @@ const activeColor = '#d1dfe3'
           </template>
         </tr>
       </template>
-      <v-overlay :model-value="modelLoading" class="align-center justify-center" contained>
-        <v-progress-circular color="primary" size="64" indeterminate></v-progress-circular>
+      <v-overlay
+        :model-value="modelLoading"
+        class="align-center justify-center"
+        contained
+      >
+        <v-progress-circular
+          color="primary"
+          size="64"
+          indeterminate
+        ></v-progress-circular>
       </v-overlay>
     </template>
   </v-data-table-server>

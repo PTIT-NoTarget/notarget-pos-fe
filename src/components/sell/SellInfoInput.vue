@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
-const props = withDefaults(defineProps<{
-  title: any
-  modelValue: any
-  editable?: boolean
-}>(), {
-  editable: false
-})
-const emit = defineEmits(['update:modelValue'])
+const props = withDefaults(
+  defineProps<{
+    title: any;
+    modelValue: any;
+    editable?: boolean;
+  }>(),
+  {
+    editable: false,
+  }
+);
+const emit = defineEmits(["update:modelValue"]);
 const value = computed({
   get: () => props.modelValue,
   set: (newValue) => {
-    emit('update:modelValue', newValue)
-  }
-})
-
+    emit("update:modelValue", newValue);
+  },
+});
 </script>
 
 <template>
@@ -26,15 +28,9 @@ const value = computed({
       </span>
     </v-col>
     <v-col cols="8">
-      <FloatNumberInput
-        :editable="editable"
-        :tooltip="false"
-        v-model="value"
-      />
+      <FloatNumberInput :editable="editable" :tooltip="false" v-model="value" />
     </v-col>
   </v-row>
 </template>
 
-<style scoped lang="sass">
-
-</style>
+<style scoped lang="sass"></style>

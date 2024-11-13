@@ -2,17 +2,13 @@
 definePage({
   meta: {
     hideHeader: false,
-    title: 'Nhập hàng',
+    title: "Nhập hàng",
     requireOTP: true,
     requireAuth: true,
   },
-})
+});
 </script>
 
-<template>
+<template></template>
 
-</template>
-
-<style scoped lang="sass">
-
-</style>
+<style scoped lang="sass"></style>

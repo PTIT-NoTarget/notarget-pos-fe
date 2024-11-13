@@ -1,19 +1,16 @@
 <script setup lang="ts">
-
 definePage({
   meta: {
     hideHeader: false,
-    title: 'Trang chủ',
+    title: "Trang chủ",
     requireOTP: true,
     requireAuth: true,
   },
-})
+});
 </script>
 
 <template>
-  <HomePage/>
+  <HomePage />
 </template>
 
-<style scoped lang="sass">
-
-</style>
+<style scoped lang="sass"></style>

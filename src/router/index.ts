@@ -5,50 +5,50 @@
  */
 
 // Composables
-import { createRouter, createWebHistory } from 'vue-router/auto'
-import { setupLayouts } from 'virtual:generated-layouts'
-import { routes } from 'vue-router/auto-routes'
-import {TokenUtils} from "@/utils/TokenUtils";
+import { createRouter, createWebHistory } from "vue-router/auto";
+import { setupLayouts } from "virtual:generated-layouts";
+import { routes } from "vue-router/auto-routes";
+import { TokenUtils } from "@/utils/TokenUtils";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: setupLayouts(routes),
-})
+});
 
 // Workaround for https://github.com/vitejs/vite/issues/11804
 router.onError((err, to) => {
-  if (err?.message?.includes?.('Failed to fetch dynamically imported module')) {
-    if (!localStorage.getItem('vuetify:dynamic-reload')) {
-      console.log('Reloading page to fix dynamic import error')
-      localStorage.setItem('vuetify:dynamic-reload', 'true')
-      location.assign(to.fullPath)
+  if (err?.message?.includes?.("Failed to fetch dynamically imported module")) {
+    if (!localStorage.getItem("vuetify:dynamic-reload")) {
+      console.log("Reloading page to fix dynamic import error");
+      localStorage.setItem("vuetify:dynamic-reload", "true");
+      location.assign(to.fullPath);
     } else {
-      console.error('Dynamic import error, reloading page did not fix it', err)
+      console.error("Dynamic import error, reloading page did not fix it", err);
     }
   } else {
-    console.error(err)
+    console.error(err);
   }
-})
+});
 
 router.isReady().then(() => {
-  localStorage.removeItem('vuetify:dynamic-reload')
-})
+  localStorage.removeItem("vuetify:dynamic-reload");
+});
 
 router.beforeEach((to, from, next) => {
-  let accessToken = localStorage.getItem('access_token')
-  let checkOtp = TokenUtils.checkOtp()
+  let accessToken = localStorage.getItem("access_token");
+  let checkOtp = TokenUtils.checkOtp();
   if (to.meta.requireAuth && !accessToken) {
-    console.log('requiresAuth')
-    next('/sign-in')
+    console.log("requiresAuth");
+    next("/sign-in");
   } else if (to.meta.requireOTP && accessToken) {
     if (checkOtp) {
-      next()
+      next();
     } else {
-      next('/otp')
+      next("/otp");
     }
   } else {
-    next()
+    next();
   }
-})
+});
 
-export default router
+export default router;

@@ -18,8 +18,8 @@ export const customer_type: any = {
   VIP: {
     value: "VIP",
     label: "Khách hàng VIP",
-  }
-}
+  },
+};
 
 export const payment: any = {
   CASH: {
@@ -29,8 +29,8 @@ export const payment: any = {
   TRANSFER: {
     value: "TRANSFER",
     label: "Chuyển khoản",
-  }
-}
+  },
+};
 
 export const payment_status: any = {
   PENDING: {
@@ -48,8 +48,8 @@ export const payment_status: any = {
   CANCELLED: {
     value: "CANCELLED",
     label: "Đã hủy",
-  }
-}
+  },
+};
 
 export const revenue_report: any = {
   DAY: {
@@ -67,14 +67,12 @@ export const revenue_report: any = {
   THREE_MONTH: {
     value: "THREE_MONTH",
     label: "3 tháng gần nhất",
-  }
-}
-
-
+  },
+};
 
 export const Enum = {
   customer_type,
   payment,
   payment_status,
-  revenue_report
-}
+  revenue_report,
+};

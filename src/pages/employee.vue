@@ -2,17 +2,15 @@
 definePage({
   meta: {
     hideHeader: false,
-    title: 'Nhân viên',
+    title: "Nhân viên",
     requireOTP: true,
     requireAuth: true,
   },
-})
+});
 </script>
 
 <template>
   <EmployeePage />
 </template>
 
-<style scoped lang="sass">
-
-</style>
+<style scoped lang="sass"></style>

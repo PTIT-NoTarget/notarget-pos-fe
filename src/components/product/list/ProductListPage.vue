@@ -1,162 +1,164 @@
 <script setup lang="ts">
-import {ExcelService} from '@/services/ExcelService'
-import {ProductService} from '@/services/ProductService'
-import {ViewService} from '@/services/ViewService'
-import {useToastStore} from '@/stores/toast'
-import {useLoadingStore} from '@/stores/loading';
-import {debounce} from 'lodash'
-import {DataType} from "@/utils/Constant";
-import {CustomService} from "@/services/CustomService";
+import { ExcelService } from "@/services/ExcelService";
+import { ProductService } from "@/services/ProductService";
+import { ViewService } from "@/services/ViewService";
+import { useToastStore } from "@/stores/toast";
+import { useLoadingStore } from "@/stores/loading";
+import { debounce } from "lodash";
+import { DataType } from "@/utils/Constant";
+import { CustomService } from "@/services/CustomService";
 import axios from "axios";
 
 const rowActions = ref<any[]>([
   {
-    icon: 'pencil',
-    label: '',
+    icon: "pencil",
+    label: "",
     action: (item: any) => openEditPopup(item),
   },
   {
-    icon: 'delete',
-    label: '',
-    action: (item: any) => openDeletePopup(item)
+    icon: "delete",
+    label: "",
+    action: (item: any) => openDeletePopup(item),
   },
-])
+]);
 const tableActions = ref<any[]>([
   {
-    icon: 'import',
-    label: 'Import',
+    icon: "import",
+    label: "Import",
     action: () => openPopupImport(),
   },
   {
-    icon: 'export',
-    label: 'Export',
+    icon: "export",
+    label: "Export",
     action: () => exportProduct(),
   },
   {
-    icon: 'plus-circle-outline',
-    label: 'Thêm',
+    icon: "plus-circle-outline",
+    label: "Thêm",
     action: () => openAddPopup(),
   },
   {
-    icon: 'delete',
-    label: 'Xóa',
+    icon: "delete",
+    label: "Xóa",
     action: () => openDeleteMultiPopup(),
   },
-])
-const headers = ref<any[]>([])
-const items = ref<any[]>([])
-const selected = ref<any[]>([])
-const productTypeSelected = ref<any[]>([])
-const viewName = 'product_list'
-const formViewName = 'product_form_popup'
-const loading = ref<boolean>(false)
+]);
+const headers = ref<any[]>([]);
+const items = ref<any[]>([]);
+const selected = ref<any[]>([]);
+const productTypeSelected = ref<any[]>([]);
+const viewName = "product_list";
+const formViewName = "product_form_popup";
+const loading = ref<boolean>(false);
 const filter = ref<any>({
   pageNumber: 1,
   pageSize: 20,
-  common: '',
+  common: "",
   filter: {},
-})
-const totalData = ref<number>(0)
-const forms = ref<any[]>([])
-const product = ref<any>({})
-const selectMap = ref<Map<string, any[]>>(new Map())
+});
+const totalData = ref<number>(0);
+const forms = ref<any[]>([]);
+const product = ref<any>({});
+const selectMap = ref<Map<string, any[]>>(new Map());
 
 onMounted(() => {
-  useLoadingStore().showLoading()
-  axios.all([
-    ViewService.getViewByMultiViewName([viewName, formViewName]),
-    ProductService.searchProduct(viewName, {
-      ...filter.value,
-      pageNumber: 0,
-    })
-  ])
-    .then(axios.spread((viewRes, prodRes) => {
-      headers.value = viewRes.data.data[viewName];
-      forms.value = viewRes.data.data[formViewName];
+  useLoadingStore().showLoading();
+  axios
+    .all([
+      ViewService.getViewByMultiViewName([viewName, formViewName]),
+      ProductService.searchProduct(viewName, {
+        ...filter.value,
+        pageNumber: 0,
+      }),
+    ])
+    .then(
+      axios.spread((viewRes, prodRes) => {
+        headers.value = viewRes.data.data[viewName];
+        forms.value = viewRes.data.data[formViewName];
 
-      items.value = prodRes.data.data;
-      totalData.value = prodRes.data.data_count;
-    }))
+        items.value = prodRes.data.data;
+        totalData.value = prodRes.data.data_count;
+      })
+    )
     .finally(() => {
       useLoadingStore().hideLoading();
-    })
-})
+    });
+});
 
 const getProductList = debounce(() => {
-  loading.value = true
+  loading.value = true;
   ProductService.searchProduct(viewName, {
     ...filter.value,
     pageNumber: filter.value.pageNumber - 1,
   })
     .then((res: any) => {
-      items.value = res.data.data
-      totalData.value = res.data.data_count
+      items.value = res.data.data;
+      totalData.value = res.data.data_count;
     })
     .finally(() => {
-      loading.value = false
-    })
-}, 500)
+      loading.value = false;
+    });
+}, 500);
 
-const deletePopup = ref<boolean>(false)
-const deleteItem = ref<any>({})
+const deletePopup = ref<boolean>(false);
+const deleteItem = ref<any>({});
 const openDeletePopup = (item: any) => {
-  deleteItem.value = item
-  deletePopup.value = true
-}
+  deleteItem.value = item;
+  deletePopup.value = true;
+};
 const deleteProduct = () => {
-  ProductService.deleteProduct(deleteItem.value.id)
-    .then(() => {
-      getProductList()
-      useToastStore().showSuccess('Xóa sản phẩm thành công')
-      deletePopup.value = false
-    })
-}
+  ProductService.deleteProduct(deleteItem.value.id).then(() => {
+    getProductList();
+    useToastStore().showSuccess("Xóa sản phẩm thành công");
+    deletePopup.value = false;
+  });
+};
 
-const deleteMultiPopup = ref<boolean>(false)
+const deleteMultiPopup = ref<boolean>(false);
 const openDeleteMultiPopup = () => {
   if (selected.value.length === 0) {
-    useToastStore().showWarning('Chưa chọn sản phẩm để xóa')
-    return
+    useToastStore().showWarning("Chưa chọn sản phẩm để xóa");
+    return;
   }
-  deleteMultiPopup.value = true
-}
+  deleteMultiPopup.value = true;
+};
 const deleteMultiProduct = () => {
   if (selected.value.length === 0) {
-    useToastStore().showWarning('Chưa chọn sản phẩm để xóa')
-    return
+    useToastStore().showWarning("Chưa chọn sản phẩm để xóa");
+    return;
   }
   ProductService.deleteMultiProduct(selected.value)
     .then(() => {
-      getProductList()
-      useToastStore().showSuccess('Xóa sản phẩm thành công')
-      deleteMultiPopup.value = false
+      getProductList();
+      useToastStore().showSuccess("Xóa sản phẩm thành công");
+      deleteMultiPopup.value = false;
     })
     .finally(() => {
-      selected.value = []
-    })
-}
+      selected.value = [];
+    });
+};
 
-const productPopup = ref<boolean>(false)
+const productPopup = ref<boolean>(false);
 const isEmptyProduct = computed(() => {
-  return Object.keys(product.value).length === 0
-})
+  return Object.keys(product.value).length === 0;
+});
 const openAddPopup = () => {
-  product.value = { is_new: true }
-  productPopup.value = true
-}
+  product.value = { is_new: true };
+  productPopup.value = true;
+};
 const openEditPopup = (item: any) => {
-  productPopup.value = true
+  productPopup.value = true;
   ProductService.getProduct(item.id)
     .then((res: any) => {
-      product.value = res.data.data
+      product.value = res.data.data;
     })
     .catch(() => {
-      productPopup.value = false
-    })
-}
+      productPopup.value = false;
+    });
+};
 
 const exportProduct = () => {
-  useLoadingStore().showLoading()
+  useLoadingStore().showLoading();
   ExcelService.exportExcel(viewName)
     .then((res) => {
       const url = window.URL.createObjectURL(
@@ -174,64 +176,63 @@ const exportProduct = () => {
     .finally(() => {
       useLoadingStore().hideLoading();
     });
-}
+};
 
-const changeSelectMap = debounce((form: any, common: string = '') => {
-  if (form['data_type'] === DataType.RELATION) {
-    CustomService.getAutoComplete(form['relate_table'], form['relate_column'], common)
-      .then((res) => {
-        selectMap.value.set(form['relate_table'], res.data.data)
-      })
+const changeSelectMap = debounce((form: any, common: string = "") => {
+  if (form["data_type"] === DataType.RELATION) {
+    CustomService.getAutoComplete(
+      form["relate_table"],
+      form["relate_column"],
+      common
+    ).then((res) => {
+      selectMap.value.set(form["relate_table"], res.data.data);
+    });
   }
-}, 400)
+}, 400);
 
 const saveProduct = () => {
-  productPopup.value = false
-  ProductService.saveProduct(product.value)
-    .then(() => {
-      getProductList()
-      useToastStore().showSuccess('Lưu sản phẩm thành công')
-    })
-}
+  productPopup.value = false;
+  ProductService.saveProduct(product.value).then(() => {
+    getProductList();
+    useToastStore().showSuccess("Lưu sản phẩm thành công");
+  });
+};
 const saveAndNewProduct = () => {
-  ProductService.saveProduct(product.value)
-    .then(() => {
-      getProductList()
-      product.value = { is_new: true }
-      useToastStore().showSuccess('Lưu sản phẩm thành công')
-    })
-}
+  ProductService.saveProduct(product.value).then(() => {
+    getProductList();
+    product.value = { is_new: true };
+    useToastStore().showSuccess("Lưu sản phẩm thành công");
+  });
+};
 const saveAndCopyProduct = () => {
-  ProductService.saveProduct(product.value)
-    .then(() => {
-      getProductList()
-      product.value = {
-        ...product.value,
-        is_new: true,
-        id: null,
-      }
-      useToastStore().showSuccess('Lưu sản phẩm thành công')
-    })
+  ProductService.saveProduct(product.value).then(() => {
+    getProductList();
+    product.value = {
+      ...product.value,
+      is_new: true,
+      id: null,
+    };
+    useToastStore().showSuccess("Lưu sản phẩm thành công");
+  });
+};
 
-}
-
-const importPopup = ref<boolean>(false)
+const importPopup = ref<boolean>(false);
 const openPopupImport = () => {
-  importPopup.value = true
-}
+  importPopup.value = true;
+};
 const importExcel = (file: any) => {
-  useLoadingStore().showLoading()
+  useLoadingStore().showLoading();
   ExcelService.importExcel(formViewName, file)
     .then(() => {
-      getProductList()
-      useToastStore().showSuccess('Import thành công')
+      getProductList();
+      useToastStore().showSuccess("Import thành công");
     })
     .finally(() => {
-      useLoadingStore().hideLoading()
-    })
-}
+      useLoadingStore().hideLoading();
+    });
+};
 const getExcelTemplate = () => {
-  useLoadingStore().showLoading()
+  useLoadingStore().showLoading();
   ExcelService.getExcelTemplate(formViewName)
     .then((res) => {
       const url = window.URL.createObjectURL(
@@ -247,43 +248,44 @@ const getExcelTemplate = () => {
       useToastStore().showSuccess("Tải mẫu thành công");
     })
     .finally(() => {
-      useLoadingStore().hideLoading()
-    })
-}
+      useLoadingStore().hideLoading();
+    });
+};
 
 watch(
   filter,
   () => {
-    getProductList()
+    getProductList();
   },
   {
     deep: true,
   }
-)
+);
 
 watch(
   productTypeSelected,
   () => {
     filter.value.filter = {
       ...filter.value.filter,
-      product_type_id: productTypeSelected.value.length > 0 ? {
-        value: productTypeSelected,
-        operator: "in",
-      } : undefined
-    }
+      product_type_id:
+        productTypeSelected.value.length > 0
+          ? {
+              value: productTypeSelected,
+              operator: "in",
+            }
+          : undefined,
+    };
   },
   {
     deep: true,
   }
-)
+);
 </script>
 
 <template>
-  <v-row style="width: 100%;height: calc(100vh - 48px);padding: 8px">
-    <v-col cols="2" style="position: relative;">
-      <LeftSide
-        :selected="productTypeSelected"
-      />
+  <v-row style="width: 100%; height: calc(100vh - 48px); padding: 8px">
+    <v-col cols="2" style="position: relative">
+      <LeftSide :selected="productTypeSelected" />
     </v-col>
     <v-col cols="10">
       <Table
@@ -302,7 +304,7 @@ watch(
         :have-filter="true"
         :total-data="totalData"
         @handle-row-click="openEditPopup"
-      />
+      ></Table>
     </v-col>
   </v-row>
   <v-dialog
@@ -313,9 +315,7 @@ watch(
   >
     <v-card width="1000">
       <v-card-title class="d-flex justify-space-between align-center">
-        <div class="text-h5 text-medium-emphasis ps-2">
-          Thông tin sản phẩm
-        </div>
+        <div class="text-h5 text-medium-emphasis ps-2">Thông tin sản phẩm</div>
 
         <v-btn
           icon="mdi-close"
@@ -332,17 +332,33 @@ watch(
           :tooltip="false"
           :select-map="selectMap"
           @update:change-select-map="changeSelectMap"
-        />
-        <v-overlay :model-value="isEmptyProduct" class="align-center justify-center" contained>
-          <v-progress-circular color="primary" size="64" indeterminate></v-progress-circular>
+        ></Form>
+        <v-overlay
+          :model-value="isEmptyProduct"
+          class="align-center justify-center"
+          contained
+        >
+          <v-progress-circular
+            color="primary"
+            size="64"
+            indeterminate
+          ></v-progress-circular>
         </v-overlay>
       </v-card-text>
 
       <v-card-actions>
-        <v-btn color="primary" @click="productPopup = false" variant="text">Hủy</v-btn>
-        <v-btn color="primary" @click="saveProduct" variant="elevated">Lưu</v-btn>
-        <v-btn color="primary" @click="saveAndNewProduct" variant="elevated">Lưu và thêm mới</v-btn>
-        <v-btn color="primary" @click="saveAndCopyProduct" variant="elevated">Lưu và sao chép</v-btn>
+        <v-btn color="primary" @click="productPopup = false" variant="text">
+          Hủy
+        </v-btn>
+        <v-btn color="primary" @click="saveProduct" variant="elevated">
+          Lưu
+        </v-btn>
+        <v-btn color="primary" @click="saveAndNewProduct" variant="elevated">
+          Lưu và thêm mới
+        </v-btn>
+        <v-btn color="primary" @click="saveAndCopyProduct" variant="elevated">
+          Lưu và sao chép
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -368,7 +384,4 @@ watch(
   ></ImportExcelPopup>
 </template>
 
-<style scoped lang="sass">
-
-
-</style>
+<style scoped lang="sass"></style>

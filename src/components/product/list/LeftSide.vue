@@ -1,22 +1,25 @@
 <script setup lang="ts">
-import {ProductService} from "@/services/ProductService";
+import { ProductService } from "@/services/ProductService";
 import axios from "axios";
-import {ViewService} from "@/services/ViewService";
-import {useLoadingStore} from "@/stores/loading";
+import { ViewService } from "@/services/ViewService";
+import { useLoadingStore } from "@/stores/loading";
 
-const props = withDefaults(defineProps<{
-  selected: any[]
-}>(), {
-  selected: () => [],
-});
+const props = withDefaults(
+  defineProps<{
+    selected: any[];
+  }>(),
+  {
+    selected: () => [],
+  }
+);
 const emit = defineEmits();
 const modelSelected = computed({
   get: () => props.selected,
   set: (newValue) => {
-    emit('update:selected', newValue);
-  }
+    emit("update:selected", newValue);
+  },
 });
-const productTypeList = ref<any[]>([])
+const productTypeList = ref<any[]>([]);
 const viewName = "group_product_type";
 const expanded = ref([0]);
 const addProductTypePopup = ref<boolean>(false);
@@ -25,93 +28,97 @@ const forms = ref<any[]>([]);
 const loading = ref<boolean>(false);
 
 onMounted(() => {
-  axios.all([
-    ViewService.getViewByViewName(viewName),
-    ProductService.searchProductType(viewName, {
-      filter: {},
-      sort_property: "id",
-      sort_order: "asc",
-    })
-  ])
-    .then(axios.spread((viewRes, prodRes) => {
-      forms.value = viewRes.data.data;
-      productTypeList.value = prodRes.data.data
-    }))
+  axios
+    .all([
+      ViewService.getViewByViewName(viewName),
+      ProductService.searchProductType(viewName, {
+        filter: {},
+        sort_property: "id",
+        sort_order: "asc",
+      }),
+    ])
+    .then(
+      axios.spread((viewRes, prodRes) => {
+        forms.value = viewRes.data.data;
+        productTypeList.value = prodRes.data.data;
+      })
+    )
     .finally(() => {
       useLoadingStore().hideLoading();
-    })
-})
+    });
+});
 
 const handleSelectRow = (event: Event, item: any) => {
-  const checked = (event.target as HTMLInputElement).checked
-  console.log('checked', checked)
+  const checked = (event.target as HTMLInputElement).checked;
+  console.log("checked", checked);
   if (checked) {
-    modelSelected.value.push(item.id)
+    modelSelected.value.push(item.id);
   } else {
     const index = modelSelected.value.indexOf(item.id);
     if (index !== -1) {
       modelSelected.value.splice(index, 1);
     }
   }
-}
+};
 
 const saveProductType = () => {
-  loading.value = true
+  loading.value = true;
   ProductService.saveProductType(productType.value)
     .then(() => {
-      addProductTypePopup.value = false
+      addProductTypePopup.value = false;
       return ProductService.searchProductType(viewName, {
         filter: {},
         sort_property: "id",
         sort_order: "asc",
-      })
+      });
     })
     .then((res: any) => {
-      productTypeList.value = res.data.data
+      productTypeList.value = res.data.data;
     })
     .finally(() => {
-      loading.value = false
-    })
-}
-
+      loading.value = false;
+    });
+};
 
 const deletePopup = ref<boolean>(false);
 const deleteItem = ref<any>({});
 const openDeletePopup = (item: any) => {
-  deleteItem.value = item
-  deletePopup.value = true
-}
+  deleteItem.value = item;
+  deletePopup.value = true;
+};
 const deleteProductType = () => {
-  loading.value = true
+  loading.value = true;
   ProductService.deleteProductType(deleteItem.value.id)
     .then(() => {
-      deletePopup.value = false
-      modelSelected.value = []
+      deletePopup.value = false;
+      modelSelected.value = [];
       return ProductService.searchProductType(viewName, {
         filter: {},
         sort_property: "id",
         sort_order: "asc",
-      })
+      });
     })
     .then((res: any) => {
-      productTypeList.value = res.data.data
+      productTypeList.value = res.data.data;
     })
     .finally(() => {
-      loading.value = false
-    })
-}
-
+      loading.value = false;
+    });
+};
 </script>
 
 <template>
   <v-expansion-panels v-model="expanded">
-    <v-expansion-panel
-      title="Loại hàng hoá"
-      height="48"
-    >
+    <v-expansion-panel title="Loại hàng hoá" height="48">
       <v-expansion-panel-text>
         <template v-for="item in productTypeList">
-          <div style="display: flex; justify-content: space-between; align-items: center">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
             <v-checkbox
               :model-value="modelSelected.includes(item.id)"
               :label="item.type_name"
@@ -140,7 +147,7 @@ const deleteProductType = () => {
           style="width: 100%"
           color="primary"
           variant="text"
-          @click="() => addProductTypePopup = true"
+          @click="() => (addProductTypePopup = true)"
           block
           prepend-icon="mdi-plus"
           text="Thêm loại hàng hoá"
@@ -154,9 +161,7 @@ const deleteProductType = () => {
     @after-leave="productType = {}"
     :persistent="true"
   >
-    <v-card
-      width="600"
-    >
+    <v-card width="600">
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="text-h5 text-medium-emphasis ps-2">
           Thông tin loại sản phẩm
@@ -179,8 +184,15 @@ const deleteProductType = () => {
       </v-card-text>
 
       <v-card-actions>
-        <v-btn color="primary" @click="addProductTypePopup = false" variant="text">Hủy</v-btn>
-        <v-btn color="primary" @click="saveProductType" variant="elevated">Lưu</v-btn>
+        <v-btn
+          color="primary"
+          @click="addProductTypePopup = false"
+          variant="text"
+          >Hủy</v-btn
+        >
+        <v-btn color="primary" @click="saveProductType" variant="elevated"
+          >Lưu</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -192,8 +204,16 @@ const deleteProductType = () => {
     type="error"
     @submit="deleteProductType"
   />
-  <v-overlay :model-value="loading" class="align-center justify-center" contained>
-    <v-progress-circular color="primary" size="64" indeterminate></v-progress-circular>
+  <v-overlay
+    :model-value="loading"
+    class="align-center justify-center"
+    contained
+  >
+    <v-progress-circular
+      color="primary"
+      size="64"
+      indeterminate
+    ></v-progress-circular>
   </v-overlay>
 </template>
 
