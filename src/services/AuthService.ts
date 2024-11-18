@@ -10,4 +10,7 @@ export const AuthService = {
   removeOtp(request: any) {
     return api.post(`auth/remove-otp`, request);
   },
+  profile() {
+    return api.get(`auth/profile`);
+  },
 };

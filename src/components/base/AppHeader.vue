@@ -2,11 +2,7 @@
 import router from "@/router";
 import { AuthService } from "@/services/AuthService";
 
-const user: any = {
-  initials: "JD",
-  fullName: "John Doe",
-  email: "john.doe@doe.com",
-};
+const user = ref<any>({});
 
 const leftMenu = [
   {
@@ -96,6 +92,22 @@ const removeOtp = () => {
     router.push("/sell");
   });
 };
+
+const getInitials = (fullName: string) => {
+  let names = fullName.split(" ");
+  let initials = names[0].charAt(0).toUpperCase();
+  if (names.length > 1) {
+    initials += names[names.length - 1].charAt(0).toUpperCase();
+  }
+  return initials;
+};
+
+onMounted(() => {
+  AuthService.profile().then((res) => {
+    user.value = res.data.data;
+    user.value.initials = getInitials(res.data.data.full_name);
+  });
+});
 </script>
 
 <template>
@@ -112,7 +124,10 @@ const removeOtp = () => {
       <v-menu rounded open-on-hover>
         <template v-slot:activator="{ props }">
           <v-btn icon v-bind="props" style="margin-right: 12px">
-            <v-avatar color="brown">
+            <v-avatar v-if="user.avatar && user.avatar.length > 0">
+              <v-img alt="avatar" :src="user.avatar"></v-img>
+            </v-avatar>
+            <v-avatar color="brown" v-else>
               <span class="text-h6">{{ user.initials }}</span>
             </v-avatar>
           </v-btn>
@@ -120,10 +135,13 @@ const removeOtp = () => {
         <v-card>
           <v-card-text>
             <div class="mx-auto text-center">
-              <v-avatar color="brown">
-                <span class="text-h5">{{ user.initials }}</span>
+              <v-avatar v-if="user.avatar && user.avatar.length > 0">
+                <v-img alt="avatar" :src="user.avatar"></v-img>
               </v-avatar>
-              <h3>{{ user.fullName }}</h3>
+              <v-avatar color="brown" v-else>
+                <span class="text-h6">{{ user.initials }}</span>
+              </v-avatar>
+              <h3>{{ user.full_name }}</h3>
               <v-divider class="my-3"></v-divider>
               <v-btn variant="text" rounded @click="logout"> Log out </v-btn>
             </div>

@@ -12,7 +12,7 @@ const props = withDefaults(
     content: "",
     visible: false,
     type: "primary",
-  }
+  },
 );
 
 const emit = defineEmits();
@@ -31,10 +31,18 @@ const modelVisible = computed({
 const handleCancel = () => {
   modelVisible.value = false;
 };
+
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === "Escape") {
+    handleCancel();
+  } else if (event.key === "Enter") {
+    submit();
+  }
+};
 </script>
 
 <template>
-  <v-dialog v-model="modelVisible" width="auto" :persistent="true">
+  <v-dialog @keydown="handleKeyDown" v-model="modelVisible" width="auto" :persistent="true">
     <v-card width="500">
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="text-h5 text-medium-emphasis ps-2">

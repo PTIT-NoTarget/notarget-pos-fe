@@ -107,11 +107,16 @@ const openDeletePopup = (item: any) => {
   deletePopup.value = true;
 };
 const deleteProduct = () => {
-  ProductService.deleteProduct(deleteItem.value.id).then(() => {
-    getProductList();
-    useToastStore().showSuccess("Xóa sản phẩm thành công");
-    deletePopup.value = false;
-  });
+  useLoadingStore().showLoading();
+  ProductService.deleteProduct(deleteItem.value.id)
+    .then(() => {
+      getProductList();
+      useToastStore().showSuccess("Xóa sản phẩm thành công");
+      deletePopup.value = false;
+    })
+    .finally(() => {
+      useLoadingStore().hideLoading();
+    });
 };
 
 const deleteMultiPopup = ref<boolean>(false);
@@ -127,6 +132,7 @@ const deleteMultiProduct = () => {
     useToastStore().showWarning("Chưa chọn sản phẩm để xóa");
     return;
   }
+  useLoadingStore().showLoading();
   ProductService.deleteMultiProduct(selected.value)
     .then(() => {
       getProductList();
@@ -135,6 +141,7 @@ const deleteMultiProduct = () => {
     })
     .finally(() => {
       selected.value = [];
+      useLoadingStore().hideLoading();
     });
 };
 
@@ -191,29 +198,44 @@ const changeSelectMap = debounce((form: any, common: string = "") => {
 }, 400);
 
 const saveProduct = () => {
-  ProductService.saveProduct(product.value).then(() => {
-    productPopup.value = false;
-    getProductList();
-    useToastStore().showSuccess("Lưu sản phẩm thành công");
-  });
+  useLoadingStore().showLoading();
+  ProductService.saveProduct(product.value)
+    .then(() => {
+      productPopup.value = false;
+      getProductList();
+      useToastStore().showSuccess("Lưu sản phẩm thành công");
+    })
+    .finally(() => {
+      useLoadingStore().hideLoading();
+    });
 };
 const saveAndNewProduct = () => {
-  ProductService.saveProduct(product.value).then(() => {
-    getProductList();
-    product.value = { is_new: true };
-    useToastStore().showSuccess("Lưu sản phẩm thành công");
-  });
+  useLoadingStore().showLoading();
+  ProductService.saveProduct(product.value)
+    .then(() => {
+      getProductList();
+      product.value = { is_new: true };
+      useToastStore().showSuccess("Lưu sản phẩm thành công");
+    })
+    .finally(() => {
+      useLoadingStore().hideLoading();
+    });
 };
 const saveAndCopyProduct = () => {
-  ProductService.saveProduct(product.value).then(() => {
-    getProductList();
-    product.value = {
-      ...product.value,
-      is_new: true,
-      id: null,
-    };
-    useToastStore().showSuccess("Lưu sản phẩm thành công");
-  });
+  useLoadingStore().showLoading();
+  ProductService.saveProduct(product.value)
+    .then(() => {
+      getProductList();
+      product.value = {
+        ...product.value,
+        is_new: true,
+        id: null,
+      };
+      useToastStore().showSuccess("Lưu sản phẩm thành công");
+    })
+    .finally(() => {
+      useLoadingStore().hideLoading();
+    });
 };
 
 const importPopup = ref<boolean>(false);

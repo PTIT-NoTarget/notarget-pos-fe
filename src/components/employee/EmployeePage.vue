@@ -80,7 +80,7 @@ onMounted(() => {
     });
 });
 
-const getProductList = debounce(() => {
+const getRecordList = debounce(() => {
   loading.value = true;
   EmployeeService.search(viewName, {
     ...filter.value,
@@ -102,11 +102,16 @@ const openDeletePopup = (item: any) => {
   deletePopup.value = true;
 };
 const deleteRecord = () => {
-  EmployeeService.delete(deleteItem.value.id).then(() => {
-    getProductList();
-    useToastStore().showSuccess("Xóa nhân viên thành công");
-    deletePopup.value = false;
-  });
+  useLoadingStore().showLoading();
+  EmployeeService.delete(deleteItem.value.id)
+    .then(() => {
+      getRecordList();
+      useToastStore().showSuccess("Xóa nhân viên thành công");
+      deletePopup.value = false;
+    })
+    .finally(() => {
+      useLoadingStore().hideLoading();
+    });
 };
 
 const deleteMultiPopup = ref<boolean>(false);
@@ -122,14 +127,16 @@ const deleteMulti = () => {
     useToastStore().showWarning("Chưa chọn nhân viên để xóa");
     return;
   }
+  useLoadingStore().showLoading();
   EmployeeService.deleteMulti(selected.value)
     .then(() => {
-      getProductList();
+      getRecordList();
       useToastStore().showSuccess("Xóa nhân viên thành công");
       deleteMultiPopup.value = false;
     })
     .finally(() => {
       selected.value = [];
+      useLoadingStore().hideLoading();
     });
 };
 
@@ -159,7 +166,7 @@ const exportData = () => {
       const url = window.URL.createObjectURL(
         new Blob([res.data], {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        })
+        }),
       );
       const link = document.createElement("a");
       link.href = url;
@@ -181,7 +188,7 @@ const changeSelectMap = debounce((form: any, common: string = "") => {
     CustomService.getAutoComplete(
       form["relate_table"],
       form["relate_column"],
-      common
+      common,
     ).then((res) => {
       selectMap.value.set(form["relate_table"], res.data.data);
     });
@@ -189,29 +196,45 @@ const changeSelectMap = debounce((form: any, common: string = "") => {
 }, 400);
 
 const saveRecord = () => {
+  useLoadingStore().showLoading();
   recordPopup.value = false;
-  EmployeeService.save(record.value).then(() => {
-    getProductList();
-    useToastStore().showSuccess("Lưu nhân viên thành công");
-  });
+  EmployeeService.save(record.value)
+    .then(() => {
+      getRecordList();
+      useToastStore().showSuccess("Lưu nhân viên thành công");
+    })
+    .finally(() => {
+      useLoadingStore().hideLoading();
+    });
 };
 const saveAndNewRecord = () => {
-  EmployeeService.save(record.value).then(() => {
-    getProductList();
-    record.value = { is_new: true };
-    useToastStore().showSuccess("Lưu nhân viên thành công");
-  });
+  useLoadingStore().showLoading();
+  EmployeeService.save(record.value)
+    .then(() => {
+      getRecordList();
+      record.value = { is_new: true };
+      useToastStore().showSuccess("Lưu nhân viên thành công");
+    })
+    .finally(() => {
+      useLoadingStore().hideLoading();
+    });
+
 };
 const saveAndCopyRecord = () => {
-  EmployeeService.save(record.value).then(() => {
-    getProductList();
-    record.value = {
-      ...record.value,
-      is_new: true,
-      id: null,
-    };
-    useToastStore().showSuccess("Lưu nhân viên thành công");
-  });
+  useLoadingStore().showLoading();
+  EmployeeService.save(record.value)
+    .then(() => {
+      getRecordList();
+      record.value = {
+        ...record.value,
+        is_new: true,
+        id: null,
+      };
+      useToastStore().showSuccess("Lưu nhân viên thành công");
+    })
+    .finally(() => {
+      useLoadingStore().hideLoading();
+    });
 };
 
 const importPopup = ref<boolean>(false);
@@ -222,7 +245,7 @@ const importExcel = (file: any) => {
   useLoadingStore().showLoading();
   ExcelService.importExcel(formViewName, file)
     .then(() => {
-      getProductList();
+      getRecordList();
       useToastStore().showSuccess("Import thành công");
     })
     .finally(() => {
@@ -236,7 +259,7 @@ const getExcelTemplate = () => {
       const url = window.URL.createObjectURL(
         new Blob([res.data], {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        })
+        }),
       );
       const link = document.createElement("a");
       link.href = url;
@@ -253,11 +276,11 @@ const getExcelTemplate = () => {
 watch(
   filter,
   () => {
-    getProductList();
+    getRecordList();
   },
   {
     deep: true,
-  }
+  },
 );
 </script>
 

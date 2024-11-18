@@ -47,6 +47,7 @@ const handleCancel = () => {
       </v-card-title>
       <v-card-text>
         <v-otp-input
+          :autofocus="true"
           length="6"
           type="number"
           v-model="otpCode"
@@ -57,7 +58,7 @@ const handleCancel = () => {
         </p>
       </v-card-text>
       <v-card-actions>
-        <v-btn color="primary" @click="onLoginToAdminWithOTP">Xác nhận </v-btn>
+        <v-btn color="primary" @click="onLoginToAdminWithOTP">Xác nhận</v-btn>
         <v-btn color="secondary" @click="handleCancel">Hủy</v-btn>
       </v-card-actions>
     </v-card>

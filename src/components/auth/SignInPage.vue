@@ -35,6 +35,14 @@ const onLoginToAdmin = () => {
     router.push("/otp");
   });
 };
+
+const handleKeyPress = (e: any) => {
+  if (e.key === "Enter" && e.altKey) {
+    onLoginToAdmin();
+  } else if (e.key === "Enter") {
+    onLoginToSell();
+  }
+};
 </script>
 
 <template>
@@ -63,7 +71,7 @@ const onLoginToAdmin = () => {
         <h2>Đăng nhập hệ thống</h2>
       </v-card-title>
       <v-card-text>
-        <v-form @submit.prevent autocomplete="off">
+        <v-form @submit.prevent @keydown="handleKeyPress" autocomplete="off">
           <v-text-field
             type="text"
             v-model="username"
