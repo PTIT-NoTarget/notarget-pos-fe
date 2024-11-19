@@ -8,7 +8,8 @@ export const RandomUtils = {
     }
     return result;
   },
-  generateRandomStringAttachTimestamp(length: number = 8): string {
-    return this.generateRandomString(length) + Date.now();
+  generatePaymentUid(): string {
+    let dateStr: number = Date.now();
+    return "UID" + this.generateRandomString(25 - dateStr.toString().length) + Date.now();
   },
 };

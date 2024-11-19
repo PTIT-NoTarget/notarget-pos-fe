@@ -34,7 +34,7 @@ onMounted(() => {
   connectPaymentSocket();
   tabs.value = JSON.parse(localStorage.getItem("tabs") || "[]");
   itemsMap.value = new Map(
-    JSON.parse(localStorage.getItem("itemsMap") || "[]")
+    JSON.parse(localStorage.getItem("itemsMap") || "[]"),
   );
   infoMap.value = new Map(JSON.parse(localStorage.getItem("infoMap") || "[]"));
   activeTab.value = JSON.parse(localStorage.getItem("activeTab") || "-1");
@@ -48,7 +48,7 @@ onMounted(() => {
         acc[name] = res.data.data[name] || {};
         return acc;
       }, {});
-    }
+    },
   );
 });
 
@@ -116,7 +116,7 @@ watch(
   },
   {
     deep: true,
-  }
+  },
 );
 
 watch(
@@ -134,12 +134,12 @@ watch(
     infoMap.value.get(activeTab.value).discount = discount;
     localStorage.setItem(
       "itemsMap",
-      JSON.stringify(Array.from(newVal.entries()))
+      JSON.stringify(Array.from(newVal.entries())),
     );
   },
   {
     deep: true,
-  }
+  },
 );
 
 watch(
@@ -149,12 +149,12 @@ watch(
       newVal.get(activeTab.value).total - newVal.get(activeTab.value).discount;
     localStorage.setItem(
       "infoMap",
-      JSON.stringify(Array.from(newVal.entries()))
+      JSON.stringify(Array.from(newVal.entries())),
     );
   },
   {
     deep: true,
-  }
+  },
 );
 
 const remove = (item: any) => {
@@ -202,7 +202,7 @@ const addNewTab = () => {
     discount: 0,
     final_total: 0,
     payment: Enum["payment"]["CASH"].value,
-    payment_uid: RandomUtils.generateRandomStringAttachTimestamp(12),
+    payment_uid: RandomUtils.generatePaymentUid(),
   });
 };
 
@@ -297,9 +297,9 @@ const logout = () => {
         <v-card>
           <v-card-text>
             <div class="mx-auto text-center">
-              <v-btn variant="text" rounded :to="'/'"> Trang chủ </v-btn>
+              <v-btn variant="text" rounded :to="'/'"> Trang chủ</v-btn>
               <v-divider class="my-3"></v-divider>
-              <v-btn variant="text" rounded @click="logout"> Đăng xuất </v-btn>
+              <v-btn variant="text" rounded @click="logout"> Đăng xuất</v-btn>
             </div>
           </v-card-text>
         </v-card>

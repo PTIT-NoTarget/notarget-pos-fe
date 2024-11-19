@@ -11,20 +11,22 @@ const props = withDefaults(
     visible: {
       visible: false,
     },
-  }
+  },
 );
 
 const title = ref<string>("Thanh toán thành công");
 const emit = defineEmits();
 
-onUpdated(() => {
+const popupTitle = computed(() => {
   if (props.visible["payment"] === Enum["payment"]["CASH"].value) {
-    title.value = "Thanh toán thành công";
+    return "Thanh toán thành công";
   } else if (props.visible["payment"] === Enum["payment"]["TRANSFER"].value) {
-    if (props.visible.payment_status === Enum["payment_status"]["PAID"].value) {
-      title.value = "Thanh toán thành công";
+    if (
+      props.visible.payment_status === Enum["payment_status"]["PAID"].value
+    ) {
+      return "Thanh toán thành công";
     } else {
-      title.value = "Thanh toán chờ xác nhận";
+      return "Thanh toán chờ xác nhận";
     }
   }
 });
@@ -46,13 +48,13 @@ const handleCancel = () => {
 };
 
 const qrCodeUrl = computed(() => {
-  return `https://img.vietqr.io/image/mbbank-3806062003-qr_only.jpg?amount=${props.info["final_total"]}&addInfo=${props.info["payment_uid"]}&accountName=QUAN%20CO%20VAN%20SUU`;
+  return `https://img.vietqr.io/image/mbbank-VQRQAAVMM8786-qr_only.jpg?amount=${props.info["final_total"]}&addInfo=${props.info["payment_uid"]}&accountName=QUAN%20CO%20VAN%20SUU`;
 });
 </script>
 
 <template>
   <v-dialog v-model="modelVisible.visible" width="auto" :persistent="true">
-    <v-card width="500" :title="title">
+    <v-card width="500" :title="popupTitle">
       <v-card-text>
         <div
           style="
