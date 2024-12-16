@@ -22,6 +22,7 @@ declare module 'vue' {
     LeftSide: typeof import('./components/product/list/LeftSide.vue')['default']
     OtpPage: typeof import('./components/auth/OtpPage.vue')['default']
     PaymentSuccessPopup: typeof import('./components/sell/PaymentSuccessPopup.vue')['default']
+    ProductImportDetailsPage: typeof import('./components/product/import/detail/ProductImportDetailPage.vue')['default']
     ProductListPage: typeof import('./components/product/list/ProductListPage.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

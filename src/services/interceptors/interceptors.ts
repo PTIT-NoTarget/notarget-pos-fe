@@ -20,7 +20,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response: any) => response,
   (error: any) => {
-    if (error.response.status === 401) {
+    if (!error.response) {
+      useToastStore().showError("Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng của bạn.");
+    } else if (error.response.status === 401) {
       useToastStore().showError("Vui lòng đăng nhập");
       localStorage.removeItem("access_token");
       router.push("/sign-in");
