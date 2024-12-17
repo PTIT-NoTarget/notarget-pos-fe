@@ -7,11 +7,15 @@ const props = withDefaults(
     disabled?: boolean;
     modelValue: any;
     tooltip?: boolean;
+    placeholder?: string;
+    rules?: any;
   }>(),
   {
     editable: false,
     tooltip: true,
     disabled: false,
+    placeholder: "",
+    rules: () => true,
   }
 );
 const emit = defineEmits(["update:modelValue"]);
@@ -55,6 +59,8 @@ const parseFloatNumber = (value: string) => {
             :model-modifiers="{ lazy: true }"
             class="text-right"
             :disabled="disabled"
+            :rules="rules"
+            :placeholder="placeholder"
           ></v-text-field>
         </template>
         <span>{{ formatFloatNumber(value) }}</span>
@@ -70,6 +76,8 @@ const parseFloatNumber = (value: string) => {
         :model-modifiers="{ lazy: true }"
         class="text-right"
         :disabled="disabled"
+        :rules="rules"
+        :placeholder="placeholder"
       ></v-text-field>
     </template>
   </template>

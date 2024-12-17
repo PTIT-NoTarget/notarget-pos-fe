@@ -61,5 +61,5 @@ defineProps<{
 .horizontal-menu
   display: flex
   flex-direction: row
-  gap: 16px
+  gap: 0
 </style>

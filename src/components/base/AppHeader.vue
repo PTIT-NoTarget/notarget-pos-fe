@@ -42,6 +42,11 @@ const leftMenu = [
     icon: "mdi-account",
     route: "/employee",
   },
+  {
+    title: "Nhà cung cấp",
+    icon: "mdi-truck",
+    route: "/supplier",
+  },
 ];
 
 const rightMenu = [
@@ -119,7 +124,7 @@ onMounted(() => {
     </template>
     <CustomListMenu :items="leftMenu" />
     <v-spacer></v-spacer>
-    <CustomListMenu :items="rightMenu" style="margin-right: 24px" />
+    <CustomListMenu :items="rightMenu" style="margin-right: 12px" />
     <template v-slot:append>
       <v-menu rounded open-on-hover>
         <template v-slot:activator="{ props }">

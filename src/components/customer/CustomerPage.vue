@@ -195,10 +195,10 @@ const changeSelectMap = debounce((form: any, common: string = "") => {
 }, 400);
 
 const saveRecord = () => {
-  recordPopup.value = false;
   useLoadingStore().showLoading();
   CustomerService.save(record.value)
     .then(() => {
+      recordPopup.value = false;
       getRecordList();
       useToastStore().showSuccess("Lưu khách hàng thành công");
     })

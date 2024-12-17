@@ -7,11 +7,15 @@ const props = withDefaults(
     disabled?: boolean;
     modelValue: any;
     tooltip?: boolean;
+    placeholder?: string;
+    rules?: any;
   }>(),
   {
     editable: false,
     tooltip: true,
     disabled: false,
+    placeholder: "",
+    rules: () => true,
   }
 );
 const emit = defineEmits(["update:modelValue"]);
@@ -63,6 +67,8 @@ const handleNumberChange = (currentValue: any, change: number) => {
             @click:prepend-inner="() => handleNumberChange(value, 1)"
             class="text-right"
             :disabled="disabled"
+            :rules="rules"
+            :placeholder="placeholder"
           ></v-text-field>
         </template>
         <span>{{ formatIntegerNumber(value) }}</span>
@@ -82,6 +88,8 @@ const handleNumberChange = (currentValue: any, change: number) => {
         @click:prepend-inner="() => handleNumberChange(value, 1)"
         class="text-right"
         :disabled="disabled"
+        :rules="rules"
+        :placeholder="placeholder"
       ></v-text-field>
     </template>
   </template>

@@ -34,5 +34,6 @@ declare module 'vue-router/auto-routes' {
     '/setting/print': RouteRecordInfo<'/setting/print', '/setting/print', Record<never, never>, Record<never, never>>,
     '/sign-in': RouteRecordInfo<'/sign-in', '/sign-in', Record<never, never>, Record<never, never>>,
     '/sign-up': RouteRecordInfo<'/sign-up', '/sign-up', Record<never, never>, Record<never, never>>,
+    '/supplier': RouteRecordInfo<'/supplier', '/supplier', Record<never, never>, Record<never, never>>,
   }
 }

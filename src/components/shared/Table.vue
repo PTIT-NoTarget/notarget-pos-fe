@@ -37,7 +37,7 @@ const props = withDefaults(
   }
 );
 
-const emit = defineEmits();
+const emit = defineEmits(['handleRowClick']);
 
 const tableHeight = computed(() => {
   let itemCount =

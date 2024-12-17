@@ -40,6 +40,13 @@ const handleChangeSelectMap = (form: any, value: string = "") => {
   searchQuery.value.set(form["relate_table"], value);
   emit("update:change-select-map", form, value);
 };
+
+const validateField = (form: any, value: any) => {
+  if (form['is_required'] && (value === null || value === undefined || value === '')) {
+    return `${form['key_title']} là trường bắt buộc`;
+  }
+  return true;
+};
 </script>
 
 <template>
@@ -73,6 +80,8 @@ const handleChangeSelectMap = (form: any, value: string = "") => {
                 no-filter
                 :search="searchQuery.get(form['relate_table'])"
                 @update:search="handleChangeSelectMap(form, $event)"
+                :placeholder="form['placeholder']"
+                :rules="[(v : any) => validateField(form, v)]"
               ></v-autocomplete>
             </v-col>
           </v-row>
@@ -99,6 +108,8 @@ const handleChangeSelectMap = (form: any, value: string = "") => {
                 :tooltip="tooltip"
                 v-model="item[form['key_name']]"
                 :key-name="form['key_name']"
+                :placeholder="form['placeholder']"
+                :rules="[(v : any) => validateField(form, v)]"
               />
             </v-col>
           </v-row>
@@ -130,6 +141,8 @@ const handleChangeSelectMap = (form: any, value: string = "") => {
                 :disabled="form['is_disabled']"
                 :tooltip="tooltip"
                 v-model="item[form['key_name']]"
+                :placeholder="form['placeholder']"
+                :rules="[(v : any) => validateField(form, v)]"
               />
             </v-col>
           </v-row>
@@ -156,6 +169,8 @@ const handleChangeSelectMap = (form: any, value: string = "") => {
                 :disabled="form['is_disabled']"
                 :tooltip="tooltip"
                 v-model="item[form['key_name']]"
+                :placeholder="form['placeholder']"
+                :rules="[(v : any) => validateField(form, v)]"
               />
             </v-col>
           </v-row>
@@ -221,6 +236,8 @@ const handleChangeSelectMap = (form: any, value: string = "") => {
                 :tooltip="tooltip"
                 v-model="item[form['key_name']]"
                 :is-area="true"
+                :placeholder="form['placeholder']"
+                :rules="[(v : any) => validateField(form, v)]"
               />
             </v-col>
           </v-row>
@@ -246,6 +263,8 @@ const handleChangeSelectMap = (form: any, value: string = "") => {
                 :editable="form['is_edit']"
                 :tooltip="tooltip"
                 v-model="item[form['key_name']]"
+                :placeholder="form['placeholder']"
+                :rules="[(v : any) => validateField(form, v)]"
               />
             </v-col>
           </v-row>

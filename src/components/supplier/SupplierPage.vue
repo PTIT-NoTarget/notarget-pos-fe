@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ExcelService } from "@/services/ExcelService";
-import { ProductService } from "@/services/ProductService";
+import { SupplierService } from "@/services/SupplierService";
 import { ViewService } from "@/services/ViewService";
 import { useToastStore } from "@/stores/toast";
 import { useLoadingStore } from "@/stores/loading";
 import { debounce } from "lodash";
-import axios from "axios";
+import { DataType } from "@/utils/Constant";
+import { CustomService } from "@/services/CustomService";
+import { CustomerService } from "@/services/CustomerService";
 
 const rowActions = ref<any[]>([
   {
@@ -28,7 +30,7 @@ const tableActions = ref<any[]>([
   {
     icon: "export",
     label: "Export",
-    action: () => exportProduct(),
+    action: () => exportData(),
   },
   {
     icon: "plus-circle-outline",
@@ -44,9 +46,8 @@ const tableActions = ref<any[]>([
 const headers = ref<any[]>([]);
 const items = ref<any[]>([]);
 const selected = ref<any[]>([]);
-const productTypeSelected = ref<any[]>([]);
-const viewName = "product_list";
-const formViewName = "product_form_popup";
+const viewName = "supplier_list";
+const formViewName = "supplier_form_popup";
 const loading = ref<boolean>(false);
 const filter = ref<any>({
   pageNumber: 1,
@@ -56,35 +57,32 @@ const filter = ref<any>({
 });
 const totalData = ref<number>(0);
 const forms = ref<any[]>([]);
-const product = ref<any>({});
+const record = ref<any>({});
+const selectMap = ref<Map<string, any[]>>(new Map());
 
 onMounted(() => {
   useLoadingStore().showLoading();
-  axios
-    .all([
-      ViewService.getViewByMultiViewName([viewName, formViewName]),
-      ProductService.searchProduct(viewName, {
+  ViewService.getViewByMultiViewName([viewName, formViewName])
+    .then((res: any) => {
+      headers.value = res.data.data[viewName];
+      forms.value = res.data.data[formViewName];
+      return SupplierService.search(viewName, {
         ...filter.value,
         pageNumber: 0,
-      }),
-    ])
-    .then(
-      axios.spread((viewRes, prodRes) => {
-        headers.value = viewRes.data.data[viewName];
-        forms.value = viewRes.data.data[formViewName];
-
-        items.value = prodRes.data.data;
-        totalData.value = prodRes.data.data_count;
-      }),
-    )
+      });
+    })
+    .then((res: any) => {
+      items.value = res.data.data;
+      totalData.value = res.data.data_count;
+    })
     .finally(() => {
       useLoadingStore().hideLoading();
     });
 });
 
-const getProductList = debounce(() => {
+const getRecordList = debounce(() => {
   loading.value = true;
-  ProductService.searchProduct(viewName, {
+  SupplierService.search(viewName, {
     ...filter.value,
     pageNumber: filter.value.pageNumber - 1,
   })
@@ -103,12 +101,12 @@ const openDeletePopup = (item: any) => {
   deleteItem.value = item;
   deletePopup.value = true;
 };
-const deleteProduct = () => {
+const deleteRecord = () => {
   useLoadingStore().showLoading();
-  ProductService.deleteProduct(deleteItem.value.id)
+  SupplierService.delete(deleteItem.value.id)
     .then(() => {
-      getProductList();
-      useToastStore().showSuccess("Xóa sản phẩm thành công");
+      getRecordList();
+      useToastStore().showSuccess("Xóa nhà cung cấp thành công");
       deletePopup.value = false;
     })
     .finally(() => {
@@ -119,21 +117,21 @@ const deleteProduct = () => {
 const deleteMultiPopup = ref<boolean>(false);
 const openDeleteMultiPopup = () => {
   if (selected.value.length === 0) {
-    useToastStore().showWarning("Chưa chọn sản phẩm để xóa");
+    useToastStore().showWarning("Chưa chọn nhà cung cấp để xóa");
     return;
   }
   deleteMultiPopup.value = true;
 };
-const deleteMultiProduct = () => {
+const deleteMulti = () => {
   if (selected.value.length === 0) {
-    useToastStore().showWarning("Chưa chọn sản phẩm để xóa");
+    useToastStore().showWarning("Chưa chọn nhà cung cấp để xóa");
     return;
   }
   useLoadingStore().showLoading();
-  ProductService.deleteMultiProduct(selected.value)
+  SupplierService.deleteMulti(selected.value)
     .then(() => {
-      getProductList();
-      useToastStore().showSuccess("Xóa sản phẩm thành công");
+      getRecordList();
+      useToastStore().showSuccess("Xóa nhà cung cấp thành công");
       deleteMultiPopup.value = false;
     })
     .finally(() => {
@@ -142,23 +140,26 @@ const deleteMultiProduct = () => {
     });
 };
 
-const productPopup = ref<boolean>(false);
+const recordPopup = ref<boolean>(false);
+const isEmptyRecord = computed(() => {
+  return Object.keys(record.value).length === 0;
+});
 const openAddPopup = () => {
-  product.value = { is_new: true };
-  productPopup.value = true;
+  record.value = { is_new: true };
+  recordPopup.value = true;
 };
 const openEditPopup = (item: any) => {
-  productPopup.value = true;
-  ProductService.getProduct(item.id)
+  recordPopup.value = true;
+  CustomerService.get(item.id)
     .then((res: any) => {
-      product.value = res.data.data;
+      record.value = res.data.data;
     })
     .catch(() => {
-      productPopup.value = false;
+      recordPopup.value = false;
     });
 };
 
-const exportProduct = () => {
+const exportData = () => {
   useLoadingStore().showLoading();
   ExcelService.exportExcel(viewName)
     .then((res) => {
@@ -174,6 +175,63 @@ const exportProduct = () => {
       link.click();
       useToastStore().showSuccess("Export thành công");
     })
+    .catch(() => {
+      useToastStore().showError("Export thất bại");
+    })
+    .finally(() => {
+      useLoadingStore().hideLoading();
+    });
+};
+
+const changeSelectMap = debounce((form: any, common: string = "") => {
+  if (form["data_type"] === DataType.RELATION) {
+    CustomService.getAutoComplete(
+      form["relate_table"],
+      form["relate_column"],
+      common,
+    ).then((res) => {
+      selectMap.value.set(form["relate_table"], res.data.data);
+    });
+  }
+}, 400);
+
+const saveRecord = () => {
+  useLoadingStore().showLoading();
+  SupplierService.save(record.value)
+    .then(() => {
+      recordPopup.value = false;
+      getRecordList();
+      useToastStore().showSuccess("Lưu nhà cung cấp thành công");
+    })
+    .finally(() => {
+      useLoadingStore().hideLoading();
+    });
+};
+const saveAndNewRecord = () => {
+  useLoadingStore().showLoading();
+  SupplierService.save(record.value)
+    .then(() => {
+      getRecordList();
+      record.value = { is_new: true };
+      useToastStore().showSuccess("Lưu nhà cung cấp thành công");
+    })
+    .finally(() => {
+      useLoadingStore().hideLoading();
+    });
+
+};
+const saveAndCopyRecord = () => {
+  useLoadingStore().showLoading();
+  SupplierService.save(record.value)
+    .then(() => {
+      getRecordList();
+      record.value = {
+        ...record.value,
+        is_new: true,
+        id: null,
+      };
+      useToastStore().showSuccess("Lưu nhà cung cấp thành công");
+    })
     .finally(() => {
       useLoadingStore().hideLoading();
     });
@@ -187,7 +245,7 @@ const importExcel = (file: any) => {
   useLoadingStore().showLoading();
   ExcelService.importExcel(formViewName, file)
     .then(() => {
-      getProductList();
+      getRecordList();
       useToastStore().showSuccess("Import thành công");
     })
     .finally(() => {
@@ -218,26 +276,7 @@ const getExcelTemplate = () => {
 watch(
   filter,
   () => {
-    getProductList();
-  },
-  {
-    deep: true,
-  },
-);
-
-watch(
-  productTypeSelected,
-  () => {
-    filter.value.filter = {
-      ...filter.value.filter,
-      product_type_id:
-        productTypeSelected.value.length > 0
-          ? {
-            value: productTypeSelected,
-            operator: "in",
-          }
-          : undefined,
-    };
+    getRecordList();
   },
   {
     deep: true,
@@ -247,10 +286,7 @@ watch(
 
 <template>
   <v-row style="width: 100%; height: calc(100vh - 48px); padding: 8px">
-    <v-col cols="2" style="position: relative">
-      <LeftSide :selected="productTypeSelected" />
-    </v-col>
-    <v-col cols="10">
+    <v-col cols="12">
       <Table
         :height="800"
         :columns="headers"
@@ -270,29 +306,73 @@ watch(
       ></Table>
     </v-col>
   </v-row>
-  <ProductDetailPopup
-    v-model:visible="productPopup"
-    v-model:product="product"
-    :forms="forms"
-    @get-product-list="getProductList"
-  />
+  <v-dialog v-model="recordPopup" width="auto" @after-leave="record = {}">
+    <v-card width="1000">
+      <v-card-title class="d-flex justify-space-between align-center">
+        <div class="text-h5 text-medium-emphasis ps-2">Thông tin nhà cung cấp</div>
+
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="recordPopup = false"
+        ></v-btn>
+      </v-card-title>
+      <v-card-text style="position: relative">
+        <Form
+          v-model:item="record"
+          :forms="forms"
+          :line-each-item="2"
+          :column-number="2"
+          :tooltip="false"
+          :select-map="selectMap"
+          @update:change-select-map="changeSelectMap"
+        ></Form>
+        <v-overlay
+          :model-value="isEmptyRecord"
+          class="align-center justify-center"
+          contained
+        >
+          <v-progress-circular
+            color="primary"
+            size="64"
+            indeterminate
+          ></v-progress-circular>
+        </v-overlay>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-btn color="primary" @click="recordPopup = false" variant="text">
+          Hủy
+        </v-btn>
+        <v-btn color="primary" @click="saveRecord" variant="elevated">
+          Lưu
+        </v-btn>
+        <v-btn color="primary" @click="saveAndNewRecord" variant="elevated">
+          Lưu và thêm mới
+        </v-btn>
+        <v-btn color="primary" @click="saveAndCopyRecord" variant="elevated">
+          Lưu và sao chép
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   <ConfirmPopup
     v-model:visible="deletePopup"
     title="Xác nhận"
-    content="Bạn có chắc chắn muốn xóa sản phẩm này không?"
+    content="Bạn có chắc chắn muốn xóa nhà cung cấp này không?"
     type="error"
-    @submit="deleteProduct"
+    @submit="deleteRecord"
   />
   <ConfirmPopup
     v-model:visible="deleteMultiPopup"
     title="Xác nhận"
-    content="Bạn có chắc chắn muốn xóa những sản phẩm đã chọn không?"
+    content="Bạn có chắc chắn muốn xóa những nhà cung cấp này không?"
     type="error"
-    @submit="deleteMultiProduct"
+    @submit="deleteMulti"
   />
   <ImportExcelPopup
     v-model:visible="importPopup"
-    title="Import sản phẩm"
+    title="Import nhà cung cấp"
     @import="importExcel"
     @get="getExcelTemplate"
   ></ImportExcelPopup>

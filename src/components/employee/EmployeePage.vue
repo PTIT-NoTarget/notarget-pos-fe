@@ -197,9 +197,9 @@ const changeSelectMap = debounce((form: any, common: string = "") => {
 
 const saveRecord = () => {
   useLoadingStore().showLoading();
-  recordPopup.value = false;
   EmployeeService.save(record.value)
     .then(() => {
+      recordPopup.value = false;
       getRecordList();
       useToastStore().showSuccess("Lưu nhân viên thành công");
     })

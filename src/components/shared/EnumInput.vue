@@ -11,6 +11,8 @@ const props = withDefaults(
     keyName?: keyof typeof Enum;
     variant?: any;
     canSearch?: boolean;
+    placeholder?: string;
+    rules?: any;
   }>(),
   {
     editable: false,
@@ -18,6 +20,8 @@ const props = withDefaults(
     variant: "filled",
     canSearch: true,
     disabled: false,
+    placeholder: "",
+    rules: () => true,
   }
 );
 const emit = defineEmits(["update:modelValue"]);
@@ -55,6 +59,8 @@ const getLabel = (value: string) => {
             hide-no-data
             :variant="variant"
             :disabled="disabled"
+            :placeholder="placeholder"
+            :rules="rules"
           ></v-autocomplete>
           <v-select
             v-else
@@ -67,6 +73,8 @@ const getLabel = (value: string) => {
             hide-details
             :disabled="disabled"
             :variant="variant"
+            :rules="rules"
+            :placeholder="placeholder"
           ></v-select>
         </template>
         <span> {{ getLabel(value) }} </span>
@@ -84,6 +92,8 @@ const getLabel = (value: string) => {
         hide-no-data
         :disabled="disabled"
         :variant="variant"
+        :placeholder="placeholder"
+        :rules="rules"
       ></v-autocomplete>
       <v-select
         v-else
@@ -95,6 +105,8 @@ const getLabel = (value: string) => {
         hide-details
         :disabled="disabled"
         :variant="variant"
+        :rules="rules"
+        :placeholder="placeholder"
       ></v-select>
     </template>
   </template>

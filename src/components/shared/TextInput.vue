@@ -8,12 +8,16 @@ const props = withDefaults(
     modelValue: any;
     tooltip?: boolean;
     isArea?: boolean;
+    placeholder?: string;
+    rules?: any;
   }>(),
   {
     editable: false,
     tooltip: true,
     isArea: false,
     disabled: false,
+    placeholder: "",
+    rules: () => true,
   }
 );
 const emit = defineEmits(["update:modelValue"]);
@@ -40,6 +44,8 @@ const value = computed({
             density="compact"
             v-if="!isArea"
             :disabled="disabled"
+            :placeholder="placeholder"
+            :rules="rules"
           ></v-text-field>
           <v-textarea
             v-model="value"
@@ -48,6 +54,8 @@ const value = computed({
             density="compact"
             single-line
             :disabled="disabled"
+            :placeholder="placeholder"
+            :rules="rules"
             v-else
           ></v-textarea>
         </template>
@@ -61,6 +69,8 @@ const value = computed({
         type="text"
         density="compact"
         :disabled="disabled"
+        :placeholder="placeholder"
+        :rules="rules"
         v-if="!isArea"
       ></v-text-field>
       <v-textarea
@@ -69,6 +79,8 @@ const value = computed({
         density="compact"
         single-line
         :disabled="disabled"
+        :placeholder="placeholder"
+        :rules="rules"
         v-else
       ></v-textarea>
     </template>
