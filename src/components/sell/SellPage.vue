@@ -312,7 +312,7 @@ const logout = () => {
       <v-col cols="8" style="height: 100%">
         <Table
           :columns="headers"
-          :items="itemsMap.get(activeTab)"
+          :items="itemsMap.get(activeTab) || []"
           :row-actions="rowActions"
           :highlight-row="false"
           :have-pagination="false"

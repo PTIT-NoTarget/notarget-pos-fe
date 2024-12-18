@@ -8,9 +8,6 @@ definePage({
   },
 });
 
-const route = useRoute();
-const params = route.params as { id: string }
-
 onMounted(() => {
 
 });
@@ -18,7 +15,7 @@ onMounted(() => {
 </script>
 
 <template>
-
+  <ProductImportDetailPage />
 </template>
 
 <style scoped lang="sass"></style>

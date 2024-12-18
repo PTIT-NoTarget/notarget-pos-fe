@@ -57,14 +57,14 @@ const handleKeyPress = (e: any) => {
       backgroundImage:
         'url(https://res.cloudinary.com/blogweb/image/upload/v1730973208/pos/oiryqbpc5safyepd2cdu.jpg)',
       backgroundSize: 'cover',
-      backgroundPosition: 'right',
+      backgroundPosition: 'right'
     }"
   >
     <v-card
       :style="{
         width: '30%',
         zIndex: 100,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        backgroundColor: 'rgba(255, 255, 255, 0.8)'
       }"
     >
       <v-card-title class="text-center">
@@ -114,7 +114,7 @@ const handleKeyPress = (e: any) => {
       width: '100%',
       height: '100%',
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      zIndex: 1,
+      zIndex: 1
     }"
   ></div>
 </template>

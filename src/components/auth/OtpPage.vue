@@ -26,7 +26,7 @@ const onLoginToAdminWithOTP = () => {
       localStorage.setItem("access_token", res.data.data.access_token);
       router.push("/");
     })
-    .catch((err) => {
+    .catch(() => {
       attemptsLeft.value -= 1;
     })
     .finally(() => {

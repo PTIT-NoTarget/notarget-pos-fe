@@ -1,70 +1,73 @@
 <script setup lang="ts">
-import { Enum } from "@/utils/Enum";
-import { OrderService } from "@/services/OrderService";
+import { Enum } from '@/utils/Enum'
+import { OrderService } from '@/services/OrderService'
 
-const xAxisData = ref<any[]>([]);
-const orderData = ref<any[]>([]);
-const revenueData = ref<any[]>([]);
-const timeRange = ref<any>(Enum["revenue_report"].WEEK.value);
-const chartLoading = ref<boolean>(false);
-const general = ref<any>({});
-const recentActivity = ref<any[]>([]);
+const xAxisData = ref<any[]>([])
+const orderData = ref<any[]>([])
+const revenueData = ref<any[]>([])
+const timeRange = ref<any>(Enum['revenue_report'].WEEK.value)
+const chartLoading = ref<boolean>(false)
+const general = ref<any>({})
+const recentActivity = ref<any[]>([])
 
 onMounted(() => {
-  loadRevenueToday();
-  loadRecentActivity();
-  loadChart();
-});
+  loadRevenueToday()
+  loadRecentActivity()
+  loadChart()
+})
 
 const loadRevenueToday = () => {
   OrderService.general().then((res) => {
-    general.value = res.data.data;
-  });
-};
+    general.value = res.data.data
+  })
+}
 
 const loadRecentActivity = () => {
   OrderService.recent().then((res) => {
-    recentActivity.value = res.data.data;
-  });
-};
+    recentActivity.value = res.data.data
+  })
+}
 
 const loadChart = () => {
-  chartLoading.value = true;
+  chartLoading.value = true
   OrderService.revenueReport(timeRange.value).then((res) => {
-    xAxisData.value = res.data.data["x_axis_data"];
-    orderData.value = res.data.data["order_data"];
-    revenueData.value = res.data.data["revenue_data"];
-    chartLoading.value = false;
-  });
-};
+    xAxisData.value = res.data.data['x_axis_data']
+    orderData.value = res.data.data['order_data']
+    revenueData.value = res.data.data['revenue_data']
+    chartLoading.value = false
+  })
+}
 
 watch(timeRange, () => {
-  console.log("timeRange", timeRange.value);
-  loadChart();
-});
+  console.log('timeRange', timeRange.value)
+  loadChart()
+})
 
-const colors = ["#5470C6", "#91CC75"];
+const colors = ['#5470C6', '#91CC75']
 const option = ref({
   color: colors,
   tooltip: {
-    trigger: "axis",
+    trigger: 'axis',
     axisPointer: {
-      type: "cross",
+      type: 'cross',
     },
   },
   toolbox: {
     feature: {
-      dataView: { show: true, readOnly: false },
+      dataView: {
+        show: true,
+        readOnly: false,
+      },
       restore: { show: true },
       saveAsImage: { show: true },
     },
   },
   legend: {
-    data: ["Đơn hàng", "Doanh thu"],
+    data: ['Đơn hàng', 'Doanh thu'],
   },
   xAxis: [
     {
-      type: "category",
+      type: 'category',
       axisTick: {
         alignWithLabel: true,
       },
@@ -73,9 +76,9 @@ const option = ref({
   ],
   yAxis: [
     {
-      type: "value",
-      name: "Đơn hàng",
-      position: "left",
+      type: 'value',
+      name: 'Đơn hàng',
+      position: 'left',
       alignTicks: true,
       axisLine: {
         show: true,
@@ -84,13 +87,13 @@ const option = ref({
         },
       },
       axisLabel: {
-        formatter: "{value} đơn",
+        formatter: '{value} đơn',
       },
     },
     {
-      type: "value",
-      name: "Doanh thu",
-      position: "right",
+      type: 'value',
+      name: 'Doanh thu',
+      position: 'right',
       alignTicks: true,
       axisLine: {
         show: true,
@@ -99,31 +102,31 @@ const option = ref({
         },
       },
       axisLabel: {
-        formatter: "{value} vnd",
+        formatter: '{value} vnd',
       },
     },
   ],
   series: [
     {
-      name: "Đơn hàng",
-      type: "bar",
+      name: 'Đơn hàng',
+      type: 'bar',
       yAxisIndex: 0,
       data: orderData.value,
     },
     {
-      name: "Doanh thu",
-      type: "line",
+      name: 'Doanh thu',
+      type: 'line',
       yAxisIndex: 1,
       data: revenueData.value,
     },
   ],
-});
+})
 watch([xAxisData, orderData, revenueData], () => {
   option.value = {
     ...option.value,
     xAxis: [
       {
-        type: "category",
+        type: 'category',
         axisTick: {
           alignWithLabel: true,
         },
@@ -132,20 +135,20 @@ watch([xAxisData, orderData, revenueData], () => {
     ],
     series: [
       {
-        name: "Đơn hàng",
-        type: "line",
+        name: 'Đơn hàng',
+        type: 'line',
         yAxisIndex: 0,
         data: orderData.value,
       },
       {
-        name: "Doanh thu",
-        type: "bar",
+        name: 'Doanh thu',
+        type: 'bar',
         yAxisIndex: 1,
         data: revenueData.value,
       },
     ],
-  };
-});
+  }
+})
 </script>
 
 <template>
@@ -160,7 +163,7 @@ watch([xAxisData, orderData, revenueData], () => {
           height="14%"
           :style="{
             margin: '0.5% auto',
-            width: '100%',
+            width: '100%'
           }"
         >
           <v-card-item>
@@ -175,11 +178,11 @@ watch([xAxisData, orderData, revenueData], () => {
                 <v-icon>mdi-cash</v-icon>
                 Doanh thu:
                 <strong>{{
-                  general?.total_revenue?.toLocaleString("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  })
-                }}</strong>
+                    general?.total_revenue?.toLocaleString('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND',
+                    })
+                  }}</strong>
               </v-col>
             </v-row>
           </v-card-item>
@@ -234,15 +237,15 @@ watch([xAxisData, orderData, revenueData], () => {
                 <v-icon>mdi-package-variant-closed</v-icon>
                 Nhân viên
                 <strong>{{
-                  activity.employee ? activity.employee.full_name : "Admin"
-                }}</strong>
+                    activity.employee ? activity.employee.full_name : 'Admin'
+                  }}</strong>
                 đã bán hàng tổng đơn hết
                 <strong>{{
-                  activity.final_total.toLocaleString("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  })
-                }}</strong>
+                    activity.final_total.toLocaleString('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND',
+                    })
+                  }}</strong>
               </template>
             </div>
           </v-card-item>

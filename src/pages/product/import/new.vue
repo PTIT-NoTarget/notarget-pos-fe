@@ -10,7 +10,7 @@ definePage({
 </script>
 
 <template>
-  <ProductImportDetailsPage />
+  <ProductImportDetailPage />
 </template>
 
 <style scoped lang="sass"></style>
