@@ -88,7 +88,6 @@ const logout = () => {
 };
 
 const removeOtp = () => {
-  console.log("remove otp");
   let request = {
     access_token: localStorage.getItem("access_token"),
   };

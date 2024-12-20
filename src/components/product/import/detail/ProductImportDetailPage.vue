@@ -3,7 +3,7 @@
 import { ViewService } from '@/services/ViewService'
 
 const productFormViewName: string = 'product_form_popup'
-const viewName: string = 'entry_list'
+const viewName: string = 'product_import_detail_list'
 const formViewName: string[] = ['entry_form_info', 'entry_form_detail']
 const headers = ref<any[]>([]);
 const forms = ref<any>(undefined);
@@ -22,10 +22,10 @@ onMounted(() => {
     (res: any) => {
       headers.value = res.data.data[viewName] || [];
       forms.value = formViewName.reduce((acc: any, name: string) => {
-        acc[name] = res.data.data[name] || {};
+        acc[name] = res.data.data[name] || [];
         return acc;
       }, {});
-      productForm.value = res.data.data[productFormViewName] || {};
+      productForm.value = res.data.data[productFormViewName] || [];
     },
   );
 });

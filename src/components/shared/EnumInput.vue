@@ -12,7 +12,7 @@ const props = withDefaults(
     variant?: any;
     canSearch?: boolean;
     placeholder?: string;
-    rules?: any;
+    rules?: any[];
   }>(),
   {
     editable: false,
@@ -21,7 +21,7 @@ const props = withDefaults(
     canSearch: true,
     disabled: false,
     placeholder: "",
-    rules: () => true,
+    rules: () => [true],
   }
 );
 const emit = defineEmits(["update:modelValue"]);

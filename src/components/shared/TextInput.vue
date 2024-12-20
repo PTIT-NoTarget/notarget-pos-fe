@@ -9,7 +9,7 @@ const props = withDefaults(
     tooltip?: boolean;
     isArea?: boolean;
     placeholder?: string;
-    rules?: any;
+    rules?: any[];
   }>(),
   {
     editable: false,
@@ -17,7 +17,7 @@ const props = withDefaults(
     isArea: false,
     disabled: false,
     placeholder: "",
-    rules: () => true,
+    rules: () => [true],
   }
 );
 const emit = defineEmits(["update:modelValue"]);

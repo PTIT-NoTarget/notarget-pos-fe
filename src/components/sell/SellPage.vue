@@ -1,11 +1,13 @@
 <script lang="ts" setup>
+import router from "@/router";
+import { AuthService } from "@/services/AuthService";
 import { OrderService } from "@/services/OrderService";
 import { ViewService } from "@/services/ViewService";
-import { RandomUtils } from "@/utils/RandomUtils";
-import { Client, IMessage } from "@stomp/stompjs";
-import { Enum } from "@/utils/Enum";
 import { useLoadingStore } from "@/stores/loading";
-import router from "@/router";
+import { Enum } from "@/utils/Enum";
+import { RandomUtils } from "@/utils/RandomUtils";
+import { TokenUtils } from "@/utils/TokenUtils";
+import { Client, IMessage } from "@stomp/stompjs";
 
 const headers = ref<any[]>([]);
 const itemsMap = ref<Map<number, any[]>>(new Map());
@@ -30,7 +32,19 @@ const successPopup = ref<any>({
   visible: false,
 });
 
+const removeOtp = () => {
+  if (TokenUtils.checkOtp()) {
+    let request = {
+      access_token: localStorage.getItem("access_token"),
+    };
+    AuthService.removeOtp(request).then((res) => {
+      localStorage.setItem("access_token", res.data.data.access_token);
+    });
+  }
+};
+
 onMounted(() => {
+  removeOtp();
   connectPaymentSocket();
   tabs.value = JSON.parse(localStorage.getItem("tabs") || "[]");
   itemsMap.value = new Map(
@@ -151,11 +165,25 @@ watch(
       "infoMap",
       JSON.stringify(Array.from(newVal.entries())),
     );
+
   },
   {
     deep: true,
   },
 );
+
+watch(
+  headers,
+  (newVal: any[]) => {
+    if(infoMap.value.get(activeTab.value).payment_status === Enum["payment_status"]["PENDING"].value) {
+      newVal.forEach((header: any) => header["is_edit"] = false);
+      rowActions.value = [];
+    }
+  },
+  {
+    deep: true,
+  },
+)
 
 const remove = (item: any) => {
   let items = itemsMap.value.get(activeTab.value) || [];
@@ -230,7 +258,10 @@ const handleSubmitPayment = () => {
     let request = {
       ...info,
       order_products: items.map((item) => {
-        let { id, ...rest } = item;
+        let {
+          id,
+          ...rest
+        } = item;
         return {
           product: {
             id: id,
@@ -241,12 +272,12 @@ const handleSubmitPayment = () => {
     };
     useLoadingStore().showLoading();
     OrderService.create(request)
-      .then(() => {
+      .then((res) => {
+        infoMap.value.get(activeTab.value).payment_status = res.data.data.payment_status;
         if (request.payment === Enum["payment"]["TRANSFER"].value) {
           successPopup.value.visible = true;
           successPopup.value.payment = request.payment;
-          successPopup.value.payment_status =
-            Enum["payment_status"]["PENDING"].value;
+          successPopup.value.payment_status = Enum["payment_status"]["PENDING"].value;
         }
       })
       .finally(() => {

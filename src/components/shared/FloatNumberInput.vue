@@ -8,14 +8,14 @@ const props = withDefaults(
     modelValue: any;
     tooltip?: boolean;
     placeholder?: string;
-    rules?: any;
+    rules?: any[];
   }>(),
   {
     editable: false,
     tooltip: true,
     disabled: false,
     placeholder: "",
-    rules: () => true,
+    rules: () => [true],
   }
 );
 const emit = defineEmits(["update:modelValue"]);
