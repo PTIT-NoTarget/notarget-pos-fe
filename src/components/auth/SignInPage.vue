@@ -91,15 +91,15 @@ const handleKeyPress = (e: any) => {
               <v-icon
                 :color="showPassword ? 'primary' : 'grey'"
                 @click="showPassword = !showPassword"
-                >{{ showPassword ? "mdi-eye-off" : "mdi-eye" }}
+              >{{ showPassword ? "mdi-eye-off" : "mdi-eye" }}
               </v-icon>
             </template>
           </v-text-field>
 
-          <v-btn class="mt-2" color="secondary" block @click="onLoginToSell">
+          <v-btn class="mt-2 w-100" color="secondary" @click="onLoginToSell">
             Đăng nhập vào trang bán hàng
           </v-btn>
-          <v-btn class="mt-2" color="primary" block @click="onLoginToAdmin">
+          <v-btn class="mt-2 w-100" color="primary" @click="onLoginToAdmin">
             Đăng nhập vào trang quản lý
           </v-btn>
         </v-form>

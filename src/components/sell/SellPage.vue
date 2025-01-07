@@ -4,6 +4,7 @@ import { AuthService } from "@/services/AuthService";
 import { OrderService } from "@/services/OrderService";
 import { ViewService } from "@/services/ViewService";
 import { useLoadingStore } from "@/stores/loading";
+import { useToastStore } from "@/stores/toast";
 import { Enum } from "@/utils/Enum";
 import { RandomUtils } from "@/utils/RandomUtils";
 import { TokenUtils } from "@/utils/TokenUtils";
@@ -172,20 +173,19 @@ watch(
   },
 );
 
-watch(
-  headers,
-  (newVal: any[]) => {
-    if(infoMap.value.get(activeTab.value).payment_status === Enum["payment_status"]["PENDING"].value) {
-      newVal.forEach((header: any) => header["is_edit"] = false);
-      rowActions.value = [];
-    }
-  },
-  {
-    deep: true,
-  },
-)
+const tableHeaders = computed(() => {
+  let columns = JSON.parse(JSON.stringify(headers.value));
+  if (infoMap.value.get(activeTab.value).payment_status === Enum["payment_status"]["PENDING"].value) {
+    columns.forEach((header: any) => header["is_edit"] = false);
+  }
+  return columns;
+});
 
 const remove = (item: any) => {
+  if(infoMap.value.get(activeTab.value).payment_status === Enum["payment_status"]["PENDING"].value) {
+    useToastStore().showError("Không thể xóa sản phẩm khi đơn hàng đang chờ xác nhận");
+    return;
+  }
   let items = itemsMap.value.get(activeTab.value) || [];
   const index = items.findIndex((i: any) => i.id === item.id);
   if (index !== -1) {
@@ -342,7 +342,7 @@ const logout = () => {
     <template v-if="activeTab !== -1">
       <v-col cols="8" style="height: 100%">
         <Table
-          :columns="headers"
+          :columns="tableHeaders"
           :items="itemsMap.get(activeTab) || []"
           :row-actions="rowActions"
           :highlight-row="false"
