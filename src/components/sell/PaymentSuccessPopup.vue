@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { PaymentService } from "@/services/PaymentService";
 import { Enum } from "@/utils/Enum";
-import { debounce } from "lodash";
 
 const props = withDefaults(
   defineProps<{
@@ -14,32 +13,40 @@ const props = withDefaults(
   },
 );
 
-const title = ref<string>("Thanh toán thành công");
 const emit = defineEmits();
-const paymentStatus = ref<string>("");
+const paymentStatus = computed({
+  get: () => props.info.payment_status,
+  set: (newValue) => {
+    emit("update:info", {
+      ...props.info,
+      payment_status: newValue,
+    });
+  },
+});
 
 watch(
   () => props.visible,
-  (newValue) => {
-    if (newValue["payment"] === Enum["payment"]["CASH"].value) {
-      paymentStatus.value = Enum["payment_status"]["PAID"].value;
-      title.value = "Thanh toán thành công";
+  () => {
+    if (paymentStatus.value === Enum["payment_status"]["PAID"].value) {
       return;
     }
-    if (newValue["payment"] === Enum["payment"]["TRANSFER"].value) {
-      if (newValue.payment_status === Enum["payment_status"]["PAID"].value) {
-        checkPayment();
-      } else {
-        paymentStatus.value = Enum["payment_status"]["PENDING"].value;
-        title.value = "Thanh toán chờ xác nhận";
+    if (props.info["payment"] === Enum["payment"]["TRANSFER"].value) {
+      if (props.visible["payment_uid"]) {
+        checkPayment(props.visible["payment_uid"]);
       }
     }
   },
   {
     deep: true,
-    immediate: true,
   },
 );
+
+const title = computed(() => {
+  if (paymentStatus.value === Enum["payment_status"]["PENDING"].value) {
+    return "Thanh toán chờ xác nhận";
+  }
+  return "Thanh toán thành công";
+});
 
 const modelVisible = computed({
   get: () => props.visible,
@@ -51,7 +58,7 @@ const modelVisible = computed({
 const handleCancel = () => {
   modelVisible.value.visible = false;
   if (paymentStatus.value === Enum["payment_status"]["PAID"].value) {
-    emit("submit", props.info.tabId);
+    emit("submit", props.info["payment_uid"]);
   }
 };
 
@@ -60,16 +67,15 @@ const qrCodeUrl = computed(() => {
 });
 
 const checkBtnLoading = ref<boolean>(false);
-const checkPayment = () => {
+const checkPayment = (paymentUid: string) => {
+  console.log("checkPayment", paymentUid);
   checkBtnLoading.value = true;
-  PaymentService.check(props.info["payment_uid"])
+  PaymentService.check(paymentUid)
     .then(() => {
       paymentStatus.value = Enum["payment_status"]["PAID"].value;
-      title.value = "Thanh toán thành công";
     })
     .catch(() => {
       paymentStatus.value = Enum["payment_status"]["PENDING"].value;
-      title.value = "Thanh toán chờ xác nhận";
     })
     .finally(() => {
       checkBtnLoading.value = false;
@@ -83,14 +89,14 @@ const checkPayment = () => {
       <v-card-text>
         <div
           style="
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-          "
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: center;
+                  align-items: center;
+                "
         >
           <template
-            v-if="modelVisible.payment === Enum['payment']['CASH'].value"
+            v-if="info.payment === Enum['payment']['CASH'].value"
           >
             <v-icon color="success" size="100">mdi-check-circle</v-icon>
             <div class="text-h5 mt-3">
@@ -99,8 +105,8 @@ const checkPayment = () => {
           </template>
           <template
             v-else-if="
-              modelVisible.payment === Enum['payment']['TRANSFER'].value
-            "
+                    info.payment === Enum['payment']['TRANSFER'].value
+                  "
           >
             <template
               v-if="paymentStatus === Enum['payment_status']['PAID'].value"
@@ -110,8 +116,8 @@ const checkPayment = () => {
             </template>
             <template
               v-else-if="
-                paymentStatus === Enum['payment_status']['PENDING'].value
-              "
+                      paymentStatus === Enum['payment_status']['PENDING'].value
+                    "
             >
               <v-img
                 :src="qrCodeUrl"
@@ -137,16 +143,16 @@ const checkPayment = () => {
             OK
           </v-btn>
           <v-btn
-            :loading="checkBtnLoading"
             v-if="
-              modelVisible.payment === Enum['payment']['TRANSFER'].value &&
-              paymentStatus === Enum['payment_status']['PENDING'].value
-            "
+                    info.payment === Enum['payment']['TRANSFER'].value &&
+                    paymentStatus === Enum['payment_status']['PENDING'].value
+                  "
+            :loading="checkBtnLoading"
             class="ml-3"
             color="warning"
             variant="outlined"
             width="100"
-            @click="checkPayment"
+            @click="() => checkPayment(info.payment_uid)"
           >
             Kiểm tra
           </v-btn>

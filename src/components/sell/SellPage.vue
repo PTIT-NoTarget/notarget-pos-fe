@@ -110,8 +110,7 @@ const onMessageReceived = (payload: IMessage) => {
     for (let val of infoMap.value.values()) {
       if (val.payment_uid === receivedMessage.payment_uid) {
         successPopup.value.visible = true;
-        successPopup.value.payment = receivedMessage.payment;
-        successPopup.value.payment_status = receivedMessage.payment_status;
+        successPopup.value.payment_uid = receivedMessage.payment_uid;
         break;
       }
     }
@@ -182,7 +181,7 @@ const tableHeaders = computed(() => {
 });
 
 const remove = (item: any) => {
-  if(infoMap.value.get(activeTab.value).payment_status === Enum["payment_status"]["PENDING"].value) {
+  if (infoMap.value.get(activeTab.value).payment_status === Enum["payment_status"]["PENDING"].value) {
     useToastStore().showError("Không thể xóa sản phẩm khi đơn hàng đang chờ xác nhận");
     return;
   }
@@ -194,6 +193,10 @@ const remove = (item: any) => {
 };
 
 const addNewRow = (item: any) => {
+  if (infoMap.value.get(activeTab.value).payment_status === Enum["payment_status"]["PENDING"].value) {
+    useToastStore().showError("Không thể thêm sản phẩm khi đơn hàng đang chờ xác nhận");
+    return;
+  }
   let items = itemsMap.value.get(activeTab.value) || [];
   const existingItem: any = items.find((i: any) => i.id === item.id);
   if (existingItem) {
@@ -234,7 +237,11 @@ const addNewTab = () => {
   });
 };
 
-const removeTab = (id: number) => {
+const removeTabByTabId = (id: number) => {
+  if (infoMap.value.get(activeTab.value).payment_status === Enum["payment_status"]["PENDING"].value) {
+    useToastStore().showError("Không thể xóa đơn hàng khi đang chờ xác nhận");
+    return;
+  }
   const index = tabs.value.findIndex((tab) => tab.id === id);
   if (index !== -1) {
     tabs.value.splice(index, 1);
@@ -249,7 +256,21 @@ const removeTab = (id: number) => {
   }
 };
 
-const currentInfo = computed(() => infoMap.value.get(activeTab.value) || {});
+const removeTabByPaymentUid = (paymentUid: string) => {
+  for (let [key, value] of infoMap.value) {
+    if (value.payment_uid === paymentUid) {
+      removeTabByTabId(key);
+      break;
+    }
+  }
+};
+
+const currentInfo = computed({
+  get: () => infoMap.value.get(activeTab.value) || {},
+  set: (newValue) => {
+    infoMap.value.set(activeTab.value, newValue);
+  },
+});
 
 const handleSubmitPayment = () => {
   const info: any = infoMap.value.get(activeTab.value);
@@ -273,12 +294,10 @@ const handleSubmitPayment = () => {
     useLoadingStore().showLoading();
     OrderService.create(request)
       .then((res) => {
+        infoMap.value.get(activeTab.value).id = res.data.data.id;
         infoMap.value.get(activeTab.value).payment_status = res.data.data.payment_status;
-        if (request.payment === Enum["payment"]["TRANSFER"].value) {
-          successPopup.value.visible = true;
-          successPopup.value.payment = request.payment;
-          successPopup.value.payment_status = Enum["payment_status"]["PENDING"].value;
-        }
+        successPopup.value.visible = true;
+        successPopup.value.payment_uid = res.data.data.payment_uid;
       })
       .finally(() => {
         useLoadingStore().hideLoading();
@@ -309,7 +328,7 @@ const logout = () => {
           :active="activeTab === tab.id"
         >
           <template v-slot:append>
-            <v-icon @click.stop="removeTab(tab.id)" size="25px">
+            <v-icon @click.stop="removeTabByTabId(tab.id)" size="25px">
               mdi-close
             </v-icon>
           </template>
@@ -362,8 +381,8 @@ const logout = () => {
   <PaymentSuccessPopup
     v-if="forms"
     v-model:visible="successPopup"
-    :info="currentInfo"
-    @submit="removeTab"
+    v-model:info="currentInfo"
+    @submit="removeTabByPaymentUid"
   />
 </template>
 
