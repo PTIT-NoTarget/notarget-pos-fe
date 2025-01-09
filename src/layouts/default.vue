@@ -24,7 +24,7 @@ const { loading } = storeToRefs(loadingStore);
 
 const route = useRoute();
 
-onMounted(() => {
+onUpdated(() => {
   document.title = (route.meta.title as string) || "Not Found";
 });
 </script>

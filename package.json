@@ -11,10 +11,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-vue": "^7.3.0",
     "@mdi/font": "7.4.47",
     "@stomp/stompjs": "~7.0.0",
     "@types/lodash": "~4.17.12",
     "axios": "~1.7.7",
+    "ckeditor5": "^43.3.1",
     "core-js": "~3.39.0",
     "echarts": "~5.5.1",
     "jwt-decode": "~4.0.0",

@@ -29,9 +29,6 @@ const formViewName: string[] = [
   "sell_order_payment",
 ];
 const forms = ref<any>(undefined);
-const successPopup = ref<any>({
-  visible: false,
-});
 
 const removeOtp = () => {
   if (TokenUtils.checkOtp()) {
@@ -104,24 +101,45 @@ const connectPaymentSocket = () => {
   stompClient.activate();
 };
 
+const successPopupVisible = ref<boolean>(false);
+const successPopupInfo = ref<any>({});
+const successPopupCheck = ref<boolean>(false);
 const onMessageReceived = (payload: IMessage) => {
   const receivedMessage: any = JSON.parse(payload.body);
   if (receivedMessage.payment_uid) {
     for (let val of infoMap.value.values()) {
       if (val.payment_uid === receivedMessage.payment_uid) {
-        successPopup.value.visible = true;
-        successPopup.value.payment_uid = receivedMessage.payment_uid;
+        successPopupCheck.value = true;
+        successPopupInfo.value = val;
         break;
       }
     }
   }
 };
 
-watch(activeTab, (newVal: number) => {
-  if (newVal !== -1) {
-    localStorage.setItem("activeTab", JSON.stringify(newVal));
-  }
-});
+watch(
+  successPopupInfo,
+  (newVal: any) => {
+    for (let [key, value] of infoMap.value) {
+      if (value.payment_uid === newVal.payment_uid) {
+        infoMap.value.set(key, newVal);
+        break;
+      }
+    }
+  },
+  {
+    deep: true,
+  },
+);
+
+watch(
+  activeTab,
+  (newVal: number) => {
+    if (newVal !== -1) {
+      localStorage.setItem("activeTab", JSON.stringify(newVal));
+    }
+  },
+);
 
 watch(
   tabs,
@@ -165,7 +183,6 @@ watch(
       "infoMap",
       JSON.stringify(Array.from(newVal.entries())),
     );
-
   },
   {
     deep: true,
@@ -296,8 +313,9 @@ const handleSubmitPayment = () => {
       .then((res) => {
         infoMap.value.get(activeTab.value).id = res.data.data.id;
         infoMap.value.get(activeTab.value).payment_status = res.data.data.payment_status;
-        successPopup.value.visible = true;
-        successPopup.value.payment_uid = res.data.data.payment_uid;
+        successPopupVisible.value = true;
+        successPopupCheck.value = false;
+        successPopupInfo.value = infoMap.value.get(activeTab.value);
       })
       .finally(() => {
         useLoadingStore().hideLoading();
@@ -324,11 +342,11 @@ const logout = () => {
         <v-tab
           v-for="tab in tabs"
           :key="tab.id"
-          @click="activeTab = tab.id"
           :active="activeTab === tab.id"
+          @click="activeTab = tab.id"
         >
           <template v-slot:append>
-            <v-icon @click.stop="removeTabByTabId(tab.id)" size="25px">
+            <v-icon size="25px" @click.stop="removeTabByTabId(tab.id)">
               mdi-close
             </v-icon>
           </template>
@@ -338,18 +356,18 @@ const logout = () => {
           <v-icon>mdi-plus</v-icon>
         </v-tab>
       </v-tabs>
-      <v-menu rounded open-on-hover>
+      <v-menu open-on-hover rounded>
         <template v-slot:activator="{ props }">
-          <v-btn icon v-bind="props" style="margin-right: 12px">
+          <v-btn icon style="margin-right: 12px" v-bind="props">
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
         </template>
         <v-card>
           <v-card-text>
             <div class="mx-auto text-center">
-              <v-btn variant="text" rounded :to="'/'"> Trang chủ</v-btn>
+              <v-btn :to="'/'" rounded variant="text"> Trang chủ</v-btn>
               <v-divider class="my-3"></v-divider>
-              <v-btn variant="text" rounded @click="logout"> Đăng xuất</v-btn>
+              <v-btn rounded variant="text" @click="logout"> Đăng xuất</v-btn>
             </div>
           </v-card-text>
         </v-card>
@@ -362,10 +380,10 @@ const logout = () => {
       <v-col cols="8" style="height: 100%">
         <Table
           :columns="tableHeaders"
+          :have-pagination="false"
+          :highlight-row="false"
           :items="itemsMap.get(activeTab) || []"
           :row-actions="rowActions"
-          :highlight-row="false"
-          :have-pagination="false"
         ></Table>
       </v-col>
       <v-col cols="4" style="height: 100%">
@@ -380,10 +398,11 @@ const logout = () => {
   </v-row>
   <PaymentSuccessPopup
     v-if="forms"
-    v-model:visible="successPopup"
-    v-model:info="currentInfo"
+    v-model:info="successPopupInfo"
+    v-model:visible="successPopupVisible"
+    :check="successPopupCheck"
     @submit="removeTabByPaymentUid"
   />
 </template>
 
-<style scoped lang="sass"></style>
+<style lang="sass" scoped></style>

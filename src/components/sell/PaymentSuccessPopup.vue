@@ -4,12 +4,13 @@ import { Enum } from "@/utils/Enum";
 
 const props = withDefaults(
   defineProps<{
-    visible?: any;
+    visible: boolean;
     info?: any;
+    check?: boolean;
   }>(),
   {
-    content: "",
-    visible: false,
+    info: {},
+    check: false,
   },
 );
 
@@ -25,15 +26,10 @@ const paymentStatus = computed({
 });
 
 watch(
-  () => props.visible,
-  () => {
-    if (paymentStatus.value === Enum["payment_status"]["PAID"].value) {
-      return;
-    }
-    if (props.info["payment"] === Enum["payment"]["TRANSFER"].value) {
-      if (props.visible["payment_uid"]) {
-        checkPayment(props.visible["payment_uid"]);
-      }
+  () => props.check,
+  (newValue) => {
+    if (newValue) {
+      checkPayment();
     }
   },
   {
@@ -56,7 +52,7 @@ const modelVisible = computed({
 });
 
 const handleCancel = () => {
-  modelVisible.value.visible = false;
+  modelVisible.value = false;
   if (paymentStatus.value === Enum["payment_status"]["PAID"].value) {
     emit("submit", props.info["payment_uid"]);
   }
@@ -67,11 +63,11 @@ const qrCodeUrl = computed(() => {
 });
 
 const checkBtnLoading = ref<boolean>(false);
-const checkPayment = (paymentUid: string) => {
-  console.log("checkPayment", paymentUid);
+const checkPayment = () => {
   checkBtnLoading.value = true;
-  PaymentService.check(paymentUid)
+  PaymentService.check(props.info["payment_uid"])
     .then(() => {
+      modelVisible.value = true;
       paymentStatus.value = Enum["payment_status"]["PAID"].value;
     })
     .catch(() => {
@@ -84,7 +80,7 @@ const checkPayment = (paymentUid: string) => {
 </script>
 
 <template>
-  <v-dialog v-model="modelVisible.visible" :persistent="true" width="auto">
+  <v-dialog v-model="modelVisible" :persistent="true" width="auto">
     <v-card :title="title" width="500">
       <v-card-text>
         <div
@@ -152,7 +148,7 @@ const checkPayment = (paymentUid: string) => {
             color="warning"
             variant="outlined"
             width="100"
-            @click="() => checkPayment(info.payment_uid)"
+            @click="checkPayment"
           >
             Kiểm tra
           </v-btn>
